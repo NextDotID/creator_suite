@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:13-alpine
+    ports:
+    - 45433:5432
+    environment:
+      POSTGRES_USER: creator_suite
+      POSTGRES_PASSWORD: iehohp6iep5eez5fai3eechohdieQaas
+      POSTGRES_DB: creator_suite_dev
+    volumes:
+      - creator_suite_db:/var/lib/postgresql/data
+volumes:
+  creator_suite_db: {}

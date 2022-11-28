@@ -1,0 +1,7 @@
+[db]
+host = "localhost"
+port = 45433
+user = "creator_suite"
+password = "iehohp6iep5eez5fai3eechohdieQaas"
+db_name = "creator_suite_dev"
+tz = "UTC"
