@@ -1,0 +1,3 @@
+[submodule "content-subscription"]
+	path = content-subscription
+	url = git@github.com:fengshanshan/content-subscription.git
