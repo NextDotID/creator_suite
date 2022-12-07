@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/nextdotid/creator_suite/config"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -8,8 +9,9 @@ import (
 )
 
 var (
-	DB *gorm.DB
-	l  = logrus.WithFields(logrus.Fields{"module": "model"})
+	DB        *gorm.DB
+	EthClient *ethclient.Client
+	l         = logrus.WithFields(logrus.Fields{"module": "model"})
 )
 
 // Init initializes DB connection instance and do migration at startup.
@@ -34,4 +36,15 @@ func Init() {
 	}
 
 	l.Info("database initialized")
+
+	if EthClient != nil {
+		return
+	}
+
+	EthClient, err = ethclient.Dial(config.GetRPCServer())
+	if err != nil {
+		l.Fatalf("Failed to connect to the Ethereum client: %s\n", err.Error())
+	}
+
+	l.Info("ethClient initialized")
 }

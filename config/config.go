@@ -3,6 +3,7 @@ package config
 import "C"
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
 	"os"
 )
@@ -27,6 +28,13 @@ func Init() {
 	}
 }
 
+type ChainConfig struct {
+	ChainID                            string
+	RPCServer                          string
+	SecretKey                          string
+	ContentSubscriptionContractAddress string
+}
+
 // GetDatabaseDSN constructs a DSN string for postgresql db driver
 func GetDatabaseDSN() string {
 	template := "host=%s port=%d user=%s password=%s dbname=%s TimeZone=%s sslmode=disable"
@@ -38,4 +46,15 @@ func GetDatabaseDSN() string {
 		Viper.GetString("db.db_name"),
 		Viper.GetString("db.tz"),
 	)
+}
+func GetChainID() string {
+	return Viper.GetString("chain.id")
+}
+
+func GetRPCServer() string {
+	return Viper.GetString("chain.rpc_server")
+}
+
+func GetSubscriptionContractAddress() common.Address {
+	return common.HexToAddress(Viper.GetString("chain.subscription_contract_address"))
 }

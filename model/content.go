@@ -5,12 +5,18 @@ import (
 	"time"
 )
 
+const VALID_STATUS = 1
+const INVALID_STATUS = 0
+
 type Content struct {
-	ID          int64 `gorm:"primarykey"`
-	KeyID       int64
-	LocationUrl string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID              int64 `gorm:"primarykey"`
+	ManagedContract string
+	AssetID         int64
+	KeyID           int64
+	LocationUrl     string
+	Status          int8 `gorm:"default:1"`
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (Content) TableName() string {
@@ -18,17 +24,33 @@ func (Content) TableName() string {
 }
 
 func FindContentByID(ID int64) (content *Content, err error) {
-	tx := DB.Model(&Content{}).Where("id = ?", ID).Find(&content)
+	tx := DB.Model(&Content{}).Where("id = ? AND status=1", ID).Find(&content)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when finding content: %w", err)
 	}
 	return content, nil
 }
 
-func (c *Content) CreateRecord() error {
+func (c *Content) CreateRecord() (int64, error) {
 	tx := DB.Create(c)
 	if tx.Error != nil {
-		return xerrors.Errorf("error when creating a content record: %w", tx.Error)
+		return 0, xerrors.Errorf("error when creating a content record: %w", tx.Error)
+	}
+	return c.ID, nil
+}
+
+func (c *Content) UpdateAssetID(ID int64, assetID int64) error {
+	tx := DB.Model(&Content{}).Where("id = ?", ID).Update("asset_id", assetID)
+	if tx.RowsAffected != 1 || tx.Error != nil {
+		return xerrors.Errorf("error when update a content asset_id record: %w", tx.Error)
+	}
+	return nil
+}
+
+func (c *Content) UpdateToInvalidStatus(ID int64) error {
+	tx := DB.Model(&Content{}).Where("id = ?", ID).Update("status", INVALID_STATUS)
+	if tx.RowsAffected != 1 || tx.Error != nil {
+		return xerrors.Errorf("error when update a content asset_id record: %w", tx.Error)
 	}
 	return nil
 }
