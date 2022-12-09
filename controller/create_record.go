@@ -3,37 +3,52 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
-	"github.com/nextdotid/creator_suite/util/encrypt"
 	"golang.org/x/xerrors"
 	"net/http"
 )
 
 type CreateRecordRequest struct {
+	ContentLocateUrl    string `json:"content_locate_url"`
+	ManagedContract     string `json:"managed_contract"`
+	PaymentTokenAddress string `json:"payment_token_address"`
+	PaymentTokenAmount  int64  `json:"payment_token_amount"`
+	KeyID               int64  `json:"key_id"`
 }
 
 type CreateRecordResponse struct {
 }
 
 func create_record(c *gin.Context) {
-	//generate key pair
-	keypairs := encrypt.GenerateKeyPair()
-	key_record := &model.KeyPair{}
-	key_record.PublicKey = keypairs[0]
-	key_record.PrivateKey = keypairs[1]
-	keyID, err := key_record.CreateRecord()
+	req := CreateRecordRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
+		return
+	}
+
+	content := &model.Content{}
+	content.LocationUrl = req.ContentLocateUrl
+	content.ManagedContract = req.ManagedContract
+	content.KeyID = req.KeyID
+	contentID, err := content.CreateRecord()
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
-	// encrypted content && upload to ipfs
-	location := "test1"
 
-	content := &model.Content{}
-	content.LocationUrl = location
-	content.KeyID = keyID
-	err = content.CreateRecord()
+	// create asset in contract, TODO should be multiple contract options
+	assetID, err := model.CreateAsset(contentID, req.PaymentTokenAddress, req.PaymentTokenAmount)
 	if err != nil {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
+		err = content.UpdateToInvalidStatus(contentID)
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
+			return
+		}
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
+		return
+	}
+	err = content.UpdateAssetID(contentID, int64(assetID))
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
 		return
 	}
 
