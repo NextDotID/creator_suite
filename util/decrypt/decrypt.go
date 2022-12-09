@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"github.com/nextdotid/creator_suite/util/dare"
 	"golang.org/x/crypto/scrypt"
 )
@@ -47,4 +49,26 @@ func DeriveKey(pswd []byte, src *os.File, dst *os.File) ([]byte, error) {
 		return nil, fmt.Errorf("failed to derive key from password and salt")
 	}
 	return key, nil
+}
+
+// ******************************* Use go-ethereum/crypto/ecies ************************************
+
+func EciesDecrypt(content []byte, privateKey []byte) ([]byte, error) {
+	if len(privateKey) <= 0 {
+		return nil, fmt.Errorf("private key must not be null")
+	}
+	if len(content) <= 0 {
+		return nil, fmt.Errorf("decrypt content must not be null")
+	}
+
+	privkey, err := crypto.ToECDSA(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	privkeyEcies := ecies.ImportECDSA(privkey)
+	decryptContent, err := privkeyEcies.Decrypt(content, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return decryptContent, nil
 }

@@ -6,8 +6,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/nextdotid/creator_suite/util/dare"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"golang.org/x/crypto/scrypt"
+
+	"github.com/nextdotid/creator_suite/util/dare"
 )
 
 // EncryptContentByPublicKey Encrypt content using the public key
@@ -77,4 +80,25 @@ func DeriveKey(pswd []byte, src *os.File, dst *os.File) ([]byte, error) {
 		return nil, fmt.Errorf("failed to derive key from password and salt")
 	}
 	return key, nil
+}
+
+// ******************************* Use go-ethereum/crypto/ecies ************************************
+
+func EciesEncrypt(content []byte, publicKey []byte) ([]byte, error) {
+	if len(publicKey) <= 0 {
+		return nil, fmt.Errorf("public key must not be null")
+	}
+	if len(content) <= 0 {
+		return nil, fmt.Errorf("encrypt content must not be null")
+	}
+	pubkey, err := crypto.UnmarshalPubkey(publicKey)
+	if err != nil {
+		return nil, err
+	}
+	pubkeyEcies := ecies.ImportECDSAPublic(pubkey)
+	encryptContent, err := ecies.Encrypt(rand.Reader, pubkeyEcies, content, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return encryptContent, nil
 }
