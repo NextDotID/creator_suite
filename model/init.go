@@ -27,7 +27,7 @@ func Init() {
 
 	err = DB.AutoMigrate(
 		&Content{},
-		&KeyPair{},
+		&KeyRecord{},
 	)
 	if err != nil {
 		panic(err)
