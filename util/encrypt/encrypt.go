@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"golang.org/x/crypto/scrypt"
@@ -22,26 +23,12 @@ func EncryptContentByPublicKey(content string, publicKey string) (string, error)
 	if content == "" {
 		return "", fmt.Errorf("invalid input content")
 	}
-	output := fmt.Sprintf("%s.enc", content)
-	src, err := os.Open(content)
-	if err != nil {
-		return "", fmt.Errorf("failed to open '%s': %v", content, err)
-	}
-	dst, err := os.Create(output)
-	if err != nil {
-		return "", fmt.Errorf("failed to create '%s': %v", output, err)
-	}
 
-	key, err := DeriveKey([]byte(publicKey), src, dst)
+	encryptDataByte, err := EciesEncrypt([]byte(content), []byte(publicKey))
 	if err != nil {
 		return "", err
 	}
-	cfg := dare.Config{Key: key}
-	// TODO: use defer to clean file when encrypt failed.
-	if _, err := AesEncrypt(src, dst, cfg); err != nil {
-		return "", err
-	}
-	return output, nil
+	return hexutil.Encode(encryptDataByte), nil
 }
 
 // ******************************* Use dare *****************************************
@@ -101,4 +88,24 @@ func EciesEncrypt(content []byte, publicKey []byte) ([]byte, error) {
 		return nil, err
 	}
 	return encryptContent, nil
+}
+
+// DerivePublicKey
+// We strip off the 0x and the first 2 characters 04
+// which is always the EC prefix and is not required in public key
+func DerivePublicKey(pubkey string) ([]byte, error) {
+	key := fmt.Sprintf("0x04%s", pubkey)
+	keyByte, err := hexutil.Decode(key)
+	if err != nil {
+		return nil, err
+	}
+	additionByte, err := hexutil.Decode("0x04")
+	if err != nil {
+		return nil, err
+	}
+	additionByteLen := len(additionByte)
+	if len(keyByte) != (64 + additionByteLen) {
+		return nil, fmt.Errorf("public key must be equal to 64 bytes")
+	}
+	return keyByte, nil
 }

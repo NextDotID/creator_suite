@@ -13,7 +13,7 @@ import (
 // http://localhost:8080/ipfs/QmQfCC7AhVzb2By7DPpnCiNT4L9i3nFriciBmYFMufCY8v
 func TestUpload(t *testing.T) {
 	cfg := IpfsConfig{
-		NodeID:      "12D3KooWE8i3z8DPU2tQBedoMez7dfo9nNrNcCH4i6vRLb6ZrYzH",
+		PeerID:      "12D3KooWE8i3z8DPU2tQBedoMez7dfo9nNrNcCH4i6vRLb6ZrYzH",
 		Pubkey:      "CAESIEAhr0ClNGdjQTRCH3VJgaHMl8vi8wZS3pQ",
 		Host:        "http://localhost",
 		APIPort:     5001,
@@ -33,7 +33,7 @@ func TestUpload(t *testing.T) {
 
 func TestDownload(t *testing.T) {
 	cfg := IpfsConfig{
-		NodeID:      "12D3KooWE8i3z8DPU2tQBedoMez7dfo9nNrNcCH4i6vRLb6ZrYzH",
+		PeerID:      "12D3KooWE8i3z8DPU2tQBedoMez7dfo9nNrNcCH4i6vRLb6ZrYzH",
 		Pubkey:      "CAESIEAhr0ClNGdjQTRCH3VJgaHMl8vi8wZS3pQ",
 		Host:        "http://localhost",
 		APIPort:     5001,
@@ -44,7 +44,7 @@ func TestDownload(t *testing.T) {
 	defer func() {
 		cancel()
 	}()
-	err := Download(ctx, &cfg, locationUrl)
+	err := Download(ctx, &cfg, locationUrl, "./test.md")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

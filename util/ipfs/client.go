@@ -33,7 +33,7 @@ func (fs IpfsFile) String() string {
 
 // IpfsConfig IPFS Authorization Config
 type IpfsConfig struct {
-	NodeID      string `json:"node_id"`
+	PeerID      string `json:"peer_id"`
 	Pubkey      string `json:"pubkey"`
 	Host        string `json:"host"`
 	APIPort     int    `json:"api_port"`
@@ -54,7 +54,7 @@ func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cli.Headers.Add("Authorization", auth(cfg.NodeID, cfg.Pubkey))
+	cli.Headers.Add("Authorization", auth(cfg.PeerID, cfg.Pubkey))
 
 	stat, err := os.Lstat(path)
 	if err != nil {
@@ -80,32 +80,35 @@ func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	ipfsfile.Name = stat.Name()
 	ipfsfile.Size = stat.Size()
 	ipfsfile.Cid = res.Cid().String()
-	ipfsfile.Path = parsePath(cfg, ipfsfile.Cid)
+	ipfsfile.Path = parseGatewayPath(cfg, ipfsfile.Cid)
 
-	log.Info(ipfsfile.String())
-	log.Info(fmt.Sprintf("cid=%v time cost: %v seconds...", res.Cid().String(), time.Now().Unix()-start))
+	verbose := false // TODO: add verbose into configuration
+	if verbose {
+		log.Info(ipfsfile.String())
+		log.Info(fmt.Sprintf("cid=%v time cost: %v seconds...", res.Cid().String(), time.Now().Unix()-start))
+	}
 
 	// call cp
 	var cpRes interface{}
-	err = cli.Request("files/cp", fmt.Sprintf("/ipfs/%s", ipfsfile.Cid), "/test-nextdotid.png", "stream-channels=true").Exec(ctx, &cpRes)
-	if err != nil {
-		return ipfsfile.Path, nil
-	}
+	cli.Request("files/cp",
+		parseIpfsPath(ipfsfile.Cid),
+		parseName(ipfsfile.Name),
+		"stream-channels=true").Exec(ctx, &cpRes)
 	return ipfsfile.Path, nil
 }
 
-func Download(ctx context.Context, cfg *IpfsConfig, locationUrl string) error {
+func Download(ctx context.Context, cfg *IpfsConfig, locationUrl string, path string) error {
 	httpCli := &http.Client{}
 	cli, err := ipfshttpcli.NewURLApiWithClient(apiUrl(cfg), httpCli)
 	if err != nil {
 		return err
 	}
-	cli.Headers.Add("Authorization", auth(cfg.NodeID, cfg.Pubkey))
+	cli.Headers.Add("Authorization", auth(cfg.PeerID, cfg.Pubkey))
 	res, err := cli.Unixfs().Get(ctx, ipfspath.New(locationUrl))
 	if err != nil {
 		return err
 	}
-	ipfsfiles.WriteTo(res, "./test.md")
+	ipfsfiles.WriteTo(res, path)
 	return nil
 }
 
@@ -118,6 +121,14 @@ func apiUrl(cfg *IpfsConfig) string {
 	return cfg.Host + ":" + strconv.Itoa(cfg.APIPort)
 }
 
-func parsePath(cfg *IpfsConfig, cid string) string {
+func parseGatewayPath(cfg *IpfsConfig, cid string) string {
 	return cfg.Host + ":" + strconv.Itoa(cfg.GatewayPort) + filepath.Join("/ipfs", cid)
+}
+
+func parseIpfsPath(cid string) string {
+	return filepath.Join("/ipfs", cid)
+}
+
+func parseName(name string) string {
+	return filepath.Join("/", name)
 }

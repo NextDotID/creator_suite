@@ -1,6 +1,7 @@
 package decrypt
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -71,4 +72,15 @@ func EciesDecrypt(content []byte, privateKey []byte) ([]byte, error) {
 		return nil, err
 	}
 	return decryptContent, nil
+}
+
+func DerivePrivateKey(privkey string) ([]byte, error) {
+	keyByte, err := hex.DecodeString(privkey)
+	if err != nil {
+		return nil, err
+	}
+	if len(keyByte) != 32 {
+		return nil, fmt.Errorf("private Key must be equal to 32 bytes")
+	}
+	return keyByte, nil
 }
