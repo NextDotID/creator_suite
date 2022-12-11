@@ -10,5 +10,16 @@ services:
       POSTGRES_DB: creator_suite_dev
     volumes:
       - creator_suite_db:/var/lib/postgresql/data
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    container_name: ipfs_host
+    volumes:
+      - ./export:/export
+      - ./ipfs_data:/data/ipfs
+    ports:
+      - '4001:4001'
+      - '4001:4001/udp'
+      - '127.0.0.1:8080:8080'
+      - '127.0.0.1:5001:5001'
 volumes:
   creator_suite_db: {}
