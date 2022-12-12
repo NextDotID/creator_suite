@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/manifoldco/promptui"
+	"github.com/mitchellh/go-homedir"
 	"github.com/nextdotid/creator_suite/config"
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/util/dare"
@@ -376,16 +379,39 @@ func eccPipeline(ctx *cli.Context) error {
 	return nil
 }
 
+func validateFilePath(filePath string) (string, error) {
+	filePath = strings.TrimSpace(filePath)
+	dir, _ := path.Split(filePath)
+	if strings.Split(dir, "/")[0] == "~" {
+		expanded, err := homedir.Expand(filePath)
+		if err != nil {
+			return "", err
+		}
+		return expanded, nil
+	}
+	return filePath, nil
+}
+
 func parseIO(input, output string) (*os.File, *os.File, error) {
 	if input == "" || output == "" {
 		fmt.Fprintf(os.Stderr, "\033[1;31;40m invalid file path\033[0m\n")
 	}
-	in, err := os.Open(input)
+	inputPath, err := validateFilePath(input)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\033[1;31;40m%v\033[0m\n", err)
+		os.Exit(codeError)
+	}
+	outputPath, err := validateFilePath(output)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\033[1;31;40m%v\033[0m\n", err)
+		os.Exit(codeError)
+	}
+	in, err := os.Open(inputPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\033[1;31;40m failed to open '%s': %v\033[0m\n", input, err)
 		os.Exit(codeError) // TODO: replace by more gentle method
 	}
-	out, err := os.Create(output)
+	out, err := os.Create(outputPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\033[1;31;40m failed to create '%s': %v\033[0m\n", output, err)
 		os.Exit(codeError) // TODO: replace by more gentle method
