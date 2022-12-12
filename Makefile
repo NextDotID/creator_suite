@@ -1,4 +1,5 @@
 bin_dir=build
+tool=cryptool
 psql_connection=postgresql://postgres:postgres@127.0.0.1:45433/creator_suite_test
 
 
@@ -16,3 +17,6 @@ clean:
 
 build:clean
 	@go build -o ${bin_dir}/ ./cmd/...
+
+install-tool:
+	@go build -o ${tool} ./cmd/${tool}/main.go

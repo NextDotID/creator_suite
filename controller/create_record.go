@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
 	"golang.org/x/xerrors"
-	"net/http"
 )
 
 type CreateRecordRequest struct {
