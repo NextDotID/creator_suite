@@ -7,8 +7,9 @@ import (
 	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/encrypt"
 
-	"golang.org/x/xerrors"
 	"net/http"
+
+	"golang.org/x/xerrors"
 )
 
 type GetContentRequest struct {
@@ -29,7 +30,7 @@ func get_content(c *gin.Context) {
 
 	pub_key, err := util.StringToPublicKey(req.PublicKey)
 	if err != nil {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid", err))
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid: %w", err))
 		return
 	}
 
@@ -41,18 +42,22 @@ func get_content(c *gin.Context) {
 
 	//TODO should use content.ManagedContract to match different contract
 	is_paid, err := model.IsQualified(crypto.PubkeyToAddress(*pub_key).String(), uint64(content.AssetID))
-	if is_paid == false || err != nil {
+	if !is_paid || err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
 		return
 	}
 
-	key, err := model.FindKeyPairByID(content.KeyID)
+	key, err := model.FindKeyRecordByID(content.KeyID)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
 
-	encrypt_key := encrypt.EncryptContentByPublicKey(key.PrivateKey, req.PublicKey)
+	encrypt_key, err := encrypt.EncryptContentByPublicKey(key.Password, req.PublicKey)
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't encrypt content by public_key: %w", err))
+		return
+	}
 	c.JSON(http.StatusOK, GetContentResponse{
 		EncryptedDecryptionKey: encrypt_key,
 	})
