@@ -36,7 +36,8 @@ func TestDecrypt(t *testing.T) {
 }
 
 func TestEncryptContentByPublicKey(t *testing.T) {
-	var key_pair []string = GenerateKeyPair()
+	key_pair := GenerateKeyPair()
+
 	type args struct {
 		content   string
 		publicKey string
@@ -50,19 +51,15 @@ func TestEncryptContentByPublicKey(t *testing.T) {
 		{
 			name:    "test encrypt",
 			args:    args{content: "123456", publicKey: key_pair[1]},
-			want:    "encrypted-test",
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := EncryptContentByPublicKey(tt.args.content, tt.args.publicKey)
+			_, err := EncryptContentByPublicKey(tt.args.content, tt.args.publicKey)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EncryptContentByPublicKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if got != tt.want {
-				t.Errorf("EncryptContentByPublicKey() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
