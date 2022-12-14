@@ -58,3 +58,7 @@ func GetRPCServer() string {
 func GetSubscriptionContractAddress() common.Address {
 	return common.HexToAddress(Viper.GetString("chain.subscription_contract_address"))
 }
+
+func GetTxAccConf() string {
+	return Viper.GetString("chain.tx_acc")
+}

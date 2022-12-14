@@ -1,2 +1,5 @@
 .idea
 build
+cryptool
+ipfs_data
+export

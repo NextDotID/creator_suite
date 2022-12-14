@@ -58,6 +58,7 @@ func get_content(c *gin.Context) {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't encrypt content by public_key: %w", err))
 		return
 	}
+
 	c.JSON(http.StatusOK, GetContentResponse{
 		EncryptedDecryptionKey: encrypt_key,
 	})

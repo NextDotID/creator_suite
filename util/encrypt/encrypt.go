@@ -23,7 +23,6 @@ func EncryptContentByPublicKey(content string, publicKey string) (string, error)
 	if content == "" {
 		return "", fmt.Errorf("invalid input content")
 	}
-
 	encryptDataByte, err := EciesEncrypt([]byte(content), []byte(publicKey))
 	if err != nil {
 		return "", err
@@ -79,6 +78,7 @@ func EciesEncrypt(content []byte, publicKey []byte) ([]byte, error) {
 		return nil, fmt.Errorf("encrypt content must not be null")
 	}
 	pubkey, err := crypto.UnmarshalPubkey(publicKey)
+
 	if err != nil {
 		return nil, err
 	}
