@@ -82,6 +82,7 @@ func EciesEncrypt(content []byte, publicKey []byte) ([]byte, error) {
 		return nil, fmt.Errorf("encrypt content must not be null")
 	}
 	pubkey, err := crypto.UnmarshalPubkey(publicKey)
+
 	if err != nil {
 		return nil, err
 	}

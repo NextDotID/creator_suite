@@ -12,13 +12,13 @@ import (
 	"math/big"
 )
 
-func CreateAsset(contentId int64, tokenAddr string, tokenAmount int64) (uint64, error) {
-	conn, err := contracts.NewContracts(config.GetSubscriptionContractAddress(), EthClient)
+func CreateAsset(contentId int64, contractAddr string, tokenAddr string, tokenAmount int64) (uint64, error) {
+	conn, err := contracts.NewContracts(common.HexToAddress(contractAddr), EthClient)
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect the content: %v", err))
 	}
 
-	tx_acc := GetTxAcc()
+	tx_acc := GetTxAccSK()
 	transactOps, err := bind.NewKeyedTransactorWithChainID(tx_acc, GetChainID())
 	tx, err := conn.CreateAsset(transactOps, uint64(contentId), common.HexToAddress(tokenAddr), big.NewInt(tokenAmount))
 	if err != nil {
@@ -31,7 +31,7 @@ func CreateAsset(contentId int64, tokenAddr string, tokenAmount int64) (uint64, 
 	}
 
 	creator_addr := crypto.PubkeyToAddress(tx_acc.PublicKey)
-	return conn.GetAssetId(&bind.CallOpts{}, creator_addr, 3)
+	return conn.GetAssetId(&bind.CallOpts{}, creator_addr, uint64(contentId))
 }
 
 func IsQualified(addr string, assetId uint64) (bool, error) {
@@ -50,8 +50,8 @@ func GetChainID() *big.Int {
 	return id
 }
 
-func GetTxAcc() *ecdsa.PrivateKey {
-	skBytes := common.Hex2Bytes("32d438aa3bf89fec159724287e565ebd0dea112afffa132a9772ca0d15fed88b")
+func GetTxAccSK() *ecdsa.PrivateKey {
+	skBytes := common.Hex2Bytes(config.GetTxAccConf())
 	sk, err := crypto.ToECDSA(skBytes)
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse paymaster secret key: %v", err))

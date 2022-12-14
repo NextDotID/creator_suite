@@ -37,7 +37,7 @@ func create_record(c *gin.Context) {
 	}
 
 	// create asset in contract, TODO should be multiple contract options
-	assetID, err := model.CreateAsset(contentID, req.PaymentTokenAddress, req.PaymentTokenAmount)
+	assetID, err := model.CreateAsset(contentID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
 	if err != nil {
 		err = content.UpdateToInvalidStatus(contentID)
 		if err != nil {
