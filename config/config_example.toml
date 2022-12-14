@@ -2,14 +2,14 @@
 host = "localhost"
 port = 45433
 user = "creator_suite"
-password = "iehohp6iep5eez5fai3eechohdieQaas"
+password = ""
 db_name = "creator_suite_dev"
 tz = "UTC"
 
 [chain]
 rpc_server = "http://127.0.0.1:8545"
 id = "5777"
-tx_acc = "2255a382b44f095535cb6743109e3afa9f775eb4f64259cc23918cb641071694"
+tx_acc = ""
 subscription_contract_address = "0xDCD4BBD2D16895604238e6D91BE49E9367aDF0c5"
 gas_limit = 3000000
 gas_price = 1000000
