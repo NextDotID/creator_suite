@@ -2,17 +2,20 @@ version: "3.8"
 services:
   postgres:
     image: postgres:13-alpine
+    container_name: postgres_service
+    hostname: postgres_service
     ports:
-    - 45433:5432
+      - 45433:5432
     environment:
-      POSTGRES_USER: creator_suite
-      POSTGRES_PASSWORD: iehohp6iep5eez5fai3eechohdieQaas
-      POSTGRES_DB: creator_suite_dev
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - creator_suite_db:/var/lib/postgresql/data
   ipfs:
     image: ipfs/go-ipfs:latest
     container_name: ipfs_host
+    hostname: ipfs_host
     volumes:
       - ./export:/export
       - ./ipfs_data:/data/ipfs
@@ -21,5 +24,24 @@ services:
       - '4001:4001/udp'
       - '127.0.0.1:8080:8080'
       - '127.0.0.1:5001:5001'
+#  server:
+#    image: creator-suite:latest
+#    build:
+#      dockerfile: './Dockerfile'
+#      context: '.'
+#    links:
+#      - postgres
+#    depends_on:
+#      - postgres
+#      - ipfs
+#    ports:
+#      - "8000:3000"
+#    environment:
+#      DB_USER: ${DB_USER}
+#      DB_PASSWORD: ${DB_PASSWORD}
+#      DB_NAME: ${DB_NAME}
+#      TX_ACCOUNT: ${TX_ACCOUNT}
+#      RPC_SERVER_ON_CHAIN: ${RPC_SERVER_ON_CHAIN}
+#      CHAIN_ID: ${CHAIN_ID}
 volumes:
   creator_suite_db: {}
