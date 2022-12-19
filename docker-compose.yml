@@ -24,24 +24,24 @@ services:
       - '4001:4001/udp'
       - '127.0.0.1:8080:8080'
       - '127.0.0.1:5001:5001'
-#  server:
-#    image: creator-suite:latest
-#    build:
-#      dockerfile: './Dockerfile'
-#      context: '.'
-#    links:
-#      - postgres
-#    depends_on:
-#      - postgres
-#      - ipfs
-#    ports:
-#      - "8000:3000"
-#    environment:
-#      DB_USER: ${DB_USER}
-#      DB_PASSWORD: ${DB_PASSWORD}
-#      DB_NAME: ${DB_NAME}
-#      TX_ACCOUNT: ${TX_ACCOUNT}
-#      RPC_SERVER_ON_CHAIN: ${RPC_SERVER_ON_CHAIN}
-#      CHAIN_ID: ${CHAIN_ID}
+  server:
+    image: creator-suite:latest
+    build:
+      dockerfile: './Dockerfile'
+      context: '.'
+    links:
+      - postgres
+    depends_on:
+      - postgres
+      - ipfs
+    ports:
+      - "8000:3000"
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      TX_ACCOUNT: ${TX_ACCOUNT}
+      RPC_SERVER_ON_CHAIN: ${RPC_SERVER_ON_CHAIN}
+      CHAIN_ID: ${CHAIN_ID}
 volumes:
   creator_suite_db: {}

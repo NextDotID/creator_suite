@@ -1,7 +1,6 @@
 package model
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -20,13 +19,8 @@ func CreateAsset(contentId int64, contractAddr string, tokenAddr string, tokenAm
 
 	tx_acc := GetTxAccSK()
 	transactOps, err := bind.NewKeyedTransactorWithChainID(tx_acc, GetChainID())
-	tx, err := conn.CreateAsset(transactOps, uint64(contentId), common.HexToAddress(tokenAddr), big.NewInt(tokenAmount))
+	_, err = conn.CreateAsset(transactOps, uint64(contentId), common.HexToAddress(tokenAddr), big.NewInt(tokenAmount))
 	if err != nil {
-		panic(fmt.Sprintf("failed to create the content asset through contract: %v", err))
-	}
-
-	receipt, err := EthClient.TransactionReceipt(context.Background(), tx.Hash())
-	if err != nil || receipt.Status != 1 {
 		panic(fmt.Sprintf("failed to create the content asset through contract: %v", err))
 	}
 
