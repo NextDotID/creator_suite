@@ -15,7 +15,6 @@ const (
 	LISTEN_ADDRESS = "0.0.0.0:3000"
 )
 
-//var flagConfig = flag.String("config", "./config_example.toml", "config_example.toml path")
 var flagDebug = flag.Bool("debug", false, "Enable debug-level log")
 
 func main() {
@@ -26,7 +25,6 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	//config.ConfigPath = *flagConfig
 	config.Init()
 
 	model.Init()

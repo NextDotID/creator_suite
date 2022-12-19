@@ -26,20 +26,22 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	content := &model.Content{}
-	content.LocationUrl = req.ContentLocateUrl
-	content.ManagedContract = req.ManagedContract
-	content.KeyID = req.KeyID
-	contentID, err := content.CreateRecord()
+	kr, err := model.FindKeyRecordByID(req.KeyID)
+	if err != nil || kr == nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error, cannot find encryption key"))
+		return
+	}
+
+	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
 
 	// create asset in contract, TODO should be multiple contract options
-	assetID, err := model.CreateAsset(contentID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
+	assetID, err := model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
 	if err != nil {
-		err = content.UpdateToInvalidStatus(contentID)
+		err = content.UpdateToInvalidStatus(content.ID)
 		if err != nil {
 			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 			return
@@ -47,7 +49,8 @@ func create_record(c *gin.Context) {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
 		return
 	}
-	err = content.UpdateAssetID(contentID, int64(assetID))
+
+	err = content.UpdateAssetID(content.ID, int64(assetID))
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
 		return

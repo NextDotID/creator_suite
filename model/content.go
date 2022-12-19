@@ -31,12 +31,16 @@ func FindContentByID(ID int64) (content *Content, err error) {
 	return content, nil
 }
 
-func (c *Content) CreateRecord() (int64, error) {
+func CreateRecord(LocateUrl string, managedContract string, keyID int64) (content *Content, err error) {
+	c := &Content{}
+	c.KeyID = keyID
+	c.ManagedContract = managedContract
+	c.LocationUrl = LocateUrl
 	tx := DB.Create(c)
 	if tx.Error != nil {
-		return 0, xerrors.Errorf("error when creating a content record: %w", tx.Error)
+		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
 	}
-	return c.ID, nil
+	return c, nil
 }
 
 func (c *Content) UpdateAssetID(ID int64, assetID int64) error {

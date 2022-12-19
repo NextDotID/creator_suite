@@ -15,15 +15,14 @@ var (
 // Init initializes config
 func Init() {
 	Viper = viper.New()
-
+	//Viper.SetConfigName("config_example") // config file name without extension
 	Viper.SetConfigType("toml")
-	//viper.AddConfigPath(".")
 	Viper.AddConfigPath("./config/") // config file path
-	//viper.AutomaticEnv()             // read value ENV variable
+	viper.AutomaticEnv()             // read value ENV variable
 
 	err := Viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("fatal error config file err:%v \n", err)
+		fmt.Printf("fatal error config file: cli err:%v \n", err)
 		os.Exit(1)
 	}
 }
@@ -41,18 +40,18 @@ func GetDatabaseDSN() string {
 	return fmt.Sprintf(template,
 		Viper.GetString("db.host"),
 		Viper.GetInt("db.port"),
-		Viper.GetString("db.user"),
-		Viper.GetString("db.password"),
-		Viper.GetString("db.db_name"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
 		Viper.GetString("db.tz"),
 	)
 }
 func GetChainID() string {
-	return Viper.GetString("chain.id")
+	return os.Getenv("CHAIN_ID")
 }
 
 func GetRPCServer() string {
-	return Viper.GetString("chain.rpc_server")
+	return os.Getenv("RPC_SERVER_ON_CHAIN")
 }
 
 func GetSubscriptionContractAddress() common.Address {
@@ -60,5 +59,5 @@ func GetSubscriptionContractAddress() common.Address {
 }
 
 func GetTxAccConf() string {
-	return Viper.GetString("chain.tx_acc")
+	return os.Getenv("TX_ACCOUNT")
 }
