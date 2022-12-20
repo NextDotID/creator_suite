@@ -1,6 +1,7 @@
 package controller
 
 import (
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,19 +40,12 @@ func create_record(c *gin.Context) {
 	}
 
 	// create asset in contract, TODO should be multiple contract options
-	assetID, err := model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
+	err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
 	if err != nil {
 		err = content.UpdateToInvalidStatus(content.ID)
 		if err != nil {
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
-			return
+			log.Errorf("update content record err:%v", err)
 		}
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
-		return
-	}
-
-	err = content.UpdateAssetID(content.ID, int64(assetID))
-	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
 		return
 	}

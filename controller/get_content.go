@@ -40,8 +40,14 @@ func get_content(c *gin.Context) {
 		return
 	}
 
+	assetID, err := model.GetAssetID(content.CreatorAddress, uint64(content.ID))
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in read contract record: %w", err))
+		return
+	}
+
 	//TODO should use content.ManagedContract to match different contract
-	is_paid, err := model.IsQualified(crypto.PubkeyToAddress(*pub_key).String(), uint64(content.AssetID))
+	is_paid, err := model.IsQualified(crypto.PubkeyToAddress(*pub_key).String(), assetID)
 	if !is_paid || err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
 		return

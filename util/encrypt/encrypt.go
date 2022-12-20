@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -17,6 +18,7 @@ import (
 // EncryptContentByPublicKey Encrypt content using the public key
 // Returns the encrypted content file path
 func EncryptContentByPublicKey(content string, publicKey string) (string, error) {
+	publicKey = strings.TrimPrefix(publicKey, "04")
 	if publicKey == "" || len(publicKey) != 128 {
 		return "", fmt.Errorf("invalid public key")
 	}

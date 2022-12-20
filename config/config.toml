@@ -3,7 +3,8 @@ host = "postgres_service"
 port = 5432
 tz = "UTC"
 
+
 [chain]
-subscription_contract_address = "0xb851c97ECDe52E67C06ddd9a4E0f2ac37d1689f3"
+subscription_contract_address = "0xD82AEE2719B1D63961c3bC7971F51E2aCa725fE7"
 gas_limit = 3000000
 gas_price = 1000000
