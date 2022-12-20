@@ -11,7 +11,7 @@ const INVALID_STATUS = 0
 type Content struct {
 	ID              int64 `gorm:"primarykey"`
 	ManagedContract string
-	AssetID         int64
+	CreatorAddress  string
 	KeyID           int64
 	LocationUrl     string
 	Status          int8 `gorm:"default:1"`
@@ -36,6 +36,7 @@ func CreateRecord(LocateUrl string, managedContract string, keyID int64) (conten
 	c.KeyID = keyID
 	c.ManagedContract = managedContract
 	c.LocationUrl = LocateUrl
+	c.CreatorAddress = GetTxAccAddr().String()
 	tx := DB.Create(c)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
