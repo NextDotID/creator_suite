@@ -41,7 +41,7 @@ func GetAssetID(addr string, contentID uint64) (uint64, error) {
 	if err != nil {
 		return 0, xerrors.Errorf(fmt.Sprintf("failed to connect the content: %v", err))
 	}
-	return conn.ContentAssetMapping(&bind.CallOpts{}, GetTxAccAddr(), contentID)
+	return conn.ContentAssetMapping(&bind.CallOpts{}, common.HexToAddress(addr), contentID)
 }
 
 func GetChainID() *big.Int {
