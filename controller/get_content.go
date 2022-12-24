@@ -6,6 +6,8 @@ import (
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/encrypt"
+	log "github.com/sirupsen/logrus"
+	"strconv"
 
 	"net/http"
 
@@ -18,15 +20,14 @@ type GetContentRequest struct {
 }
 
 type GetContentResponse struct {
-	EncryptedDecryptionKey string
+	EncryptedDecryptionKey string `json:"encrypted_decryption_key"`
+	LocationUrl            string `json:"location_url"`
 }
 
 func get_content(c *gin.Context) {
 	req := GetContentRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
-		return
-	}
+	req.PublicKey = c.Query("public_key")
+	req.ContentID, _ = strconv.ParseInt(c.Query("content_id"), 0, 64)
 
 	pub_key, err := util.StringToPublicKey(req.PublicKey)
 	if err != nil {
@@ -40,8 +41,16 @@ func get_content(c *gin.Context) {
 		return
 	}
 
+	assetID, err := model.GetAssetID(content.CreatorAddress, uint64(content.ID))
+	log.Infof("get assetID: %d", assetID)
+
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in read contract record: %w", err))
+		return
+	}
+
 	//TODO should use content.ManagedContract to match different contract
-	is_paid, err := model.IsQualified(crypto.PubkeyToAddress(*pub_key).String(), uint64(content.AssetID))
+	is_paid, err := model.IsQualified(crypto.PubkeyToAddress(*pub_key).String(), assetID)
 	if !is_paid || err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
 		return
@@ -61,5 +70,6 @@ func get_content(c *gin.Context) {
 
 	c.JSON(http.StatusOK, GetContentResponse{
 		EncryptedDecryptionKey: encrypt_key,
+		LocationUrl:            content.LocationUrl,
 	})
 }
