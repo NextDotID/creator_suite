@@ -40,6 +40,12 @@ type IpfsConfig struct {
 	GatewayPort int    `json:"gateway_port"`
 }
 
+type IpfsStat struct {
+	Hash string
+	Type string
+	Size int64 // unixfs size
+}
+
 /**
  * @description:
  * @param {*IpfsConfig} cfg IPFS Authorization Config
@@ -97,6 +103,40 @@ func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	return ipfsfile.Path, nil
 }
 
+func Stat(ctx context.Context, cfg *IpfsConfig, cid string) (*IpfsStat, error) {
+	httpCli := &http.Client{Timeout: 5 * time.Second}
+	cli, err := ipfshttpcli.NewURLApiWithClient(apiUrl(cfg), httpCli)
+	if err != nil {
+		return nil, err
+	}
+	cli.Headers.Add("Authorization", auth(cfg.PeerID, cfg.Pubkey))
+
+	var stat IpfsStat
+	err = cli.Request("files/stat", ParseIpfsPath(cid)).Exec(ctx, &stat)
+	if err != nil {
+		return nil, err
+	}
+	return &stat, nil
+}
+
+func Ls(ctx context.Context, cfg *IpfsConfig, locationUrl string) error {
+	httpCli := &http.Client{}
+	cli, err := ipfshttpcli.NewURLApiWithClient(apiUrl(cfg), httpCli)
+	if err != nil {
+		return err
+	}
+	res, err := cli.Unixfs().Ls(ctx, ipfspath.New(locationUrl))
+	if err != nil {
+		return err
+	}
+	entry := <-res
+	if entry.Err != nil {
+		return entry.Err
+	}
+	fmt.Printf("%v\n", entry)
+	return nil
+}
+
 func Download(ctx context.Context, cfg *IpfsConfig, locationUrl string, path string) error {
 	httpCli := &http.Client{}
 	cli, err := ipfshttpcli.NewURLApiWithClient(apiUrl(cfg), httpCli)
@@ -121,14 +161,19 @@ func apiUrl(cfg *IpfsConfig) string {
 	return cfg.Host + ":" + strconv.Itoa(cfg.APIPort)
 }
 
-func parseGatewayPath(cfg *IpfsConfig, cid string) string {
+func ParseGatewayPath(cfg *IpfsConfig, cid string) string {
 	return cfg.Host + ":" + strconv.Itoa(cfg.GatewayPort) + filepath.Join("/ipfs", cid)
 }
 
-func parseIpfsPath(cid string) string {
+func ParseIpfsPath(cid string) string {
 	return filepath.Join("/ipfs", cid)
 }
 
-func parseName(name string) string {
+func ParseName(name string) string {
 	return filepath.Join("/", name)
+}
+
+func ParseCid(path string) string {
+	strs := strings.Split(path, "/")
+	return strs[len(strs)-1]
 }
