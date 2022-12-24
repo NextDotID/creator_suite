@@ -42,6 +42,7 @@ func Init() {
 	Engine.GET("/api/v1/get-content", get_content)
 
 	Engine.POST("/api/v1/ipfs/alive", alive)
+	Engine.POST("/api/v1/file/list", list)
 }
 
 type ErrorResponse struct {
