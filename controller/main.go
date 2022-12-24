@@ -40,6 +40,8 @@ func Init() {
 
 	Engine.POST("/api/v1/create", create_record)
 	Engine.GET("/api/v1/get-content", get_content)
+
+	Engine.POST("/api/v1/ipfs/alive", alive)
 }
 
 type ErrorResponse struct {

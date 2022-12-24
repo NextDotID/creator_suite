@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/nextdotid/creator_suite/util/telnet"
 	log "github.com/sirupsen/logrus"
 
 	ipfsfiles "github.com/ipfs/go-ipfs-files"
@@ -44,6 +46,19 @@ type IpfsStat struct {
 	Hash string
 	Type string
 	Size int64 // unixfs size
+}
+
+func Alive(cfg *IpfsConfig) (bool, error) {
+	err := telnet.TelnetIPPortTimeout(cfg.Host, cfg.APIPort, 5)
+	if err != nil {
+		return false, err
+	}
+
+	err = telnet.TelnetIPPortTimeout(cfg.Host, cfg.GatewayPort, 5)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 /**
@@ -86,7 +101,7 @@ func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	ipfsfile.Name = stat.Name()
 	ipfsfile.Size = stat.Size()
 	ipfsfile.Cid = res.Cid().String()
-	ipfsfile.Path = parseGatewayPath(cfg, ipfsfile.Cid)
+	ipfsfile.Path = ParseGatewayPath(cfg, ipfsfile.Cid)
 
 	verbose := false // TODO: add verbose into configuration
 	if verbose {
@@ -97,8 +112,8 @@ func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	// call cp
 	var cpRes interface{}
 	cli.Request("files/cp",
-		parseIpfsPath(ipfsfile.Cid),
-		parseName(ipfsfile.Name),
+		ParseIpfsPath(ipfsfile.Cid),
+		ParseName(ipfsfile.Name),
 		"stream-channels=true").Exec(ctx, &cpRes)
 	return ipfsfile.Path, nil
 }
