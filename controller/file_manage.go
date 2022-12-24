@@ -153,7 +153,6 @@ func list(c *gin.Context) {
 
 			ContentID:       content.ID,
 			ManagedContract: content.ManagedContract,
-			AssetID:         content.AssetID,
 			KeyID:           content.KeyID,
 			LocationUrl:     content.LocationUrl,
 			CreatedTime:     util.Datetime2DateString(content.CreatedAt),
