@@ -110,7 +110,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useIpfsStore, useBrowserStore } from '@/stores'
 import http from '@/plugins/http-common'
 import { IpfsCfg, IpfsUpload, IpfsUploadResult } from '@/types/ipfs'
@@ -132,7 +131,7 @@ export default defineComponent({
   setup(props) {
     var encrypt_file = props.origin_file + '.enc'
     var encrypt_name = props.name + '.enc'
-    console.log(props)
+    console.log(props,'dialog')
     const store = useIpfsStore()
     const browser = useBrowserStore()
     return {
