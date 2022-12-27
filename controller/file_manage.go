@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/dare"
-	"github.com/nextdotid/creator_suite/util/decrypt"
 	"github.com/nextdotid/creator_suite/util/encrypt"
 	"github.com/nextdotid/creator_suite/util/ipfs"
 	log "github.com/sirupsen/logrus"
@@ -27,6 +27,7 @@ type Folder struct {
 	CreatedTime string `json:"created_time"`
 	UpdateTime  string `json:"update_time"`
 	ContentID   int64  `json:"content_id"`
+	Files       []File `json:"children"`
 }
 
 type File struct {
@@ -80,6 +81,14 @@ func Ext(name string) string {
 	return "other"
 }
 
+func pathJoin(basePath string, elem ...string) string {
+	if strings.HasPrefix(basePath, "./") {
+		base := strings.TrimSuffix(basePath, "/")
+		return base + "/" + filepath.Join(elem...)
+	}
+	return filepath.Join(basePath, filepath.Join(elem...))
+}
+
 func list(c *gin.Context) {
 	req := ListRequest{}
 	if err := c.BindJSON(&req); err != nil {
@@ -97,82 +106,85 @@ func list(c *gin.Context) {
 
 	for _, item := range list {
 		if item.IsDir() {
-			contentID, err := strconv.ParseInt(item.Name(), 32, 10)
+			contentID, err := strconv.ParseInt(item.Name(), 10, 32)
 			if err != nil {
 				continue
 			}
-			folders = append(folders, Folder{
+			folder := Folder{
 				Name:        item.Name(),
 				Type:        "dirs",
-				Path:        filepath.Join(req.Path, item.Name()),
+				Path:        pathJoin(req.Path, item.Name()),
 				ContentID:   contentID,
 				CreatedTime: util.Datetime2DateString(item.ModTime()),
 				UpdateTime:  util.Datetime2DateString(item.ModTime()),
+			}
+
+			children := make([]File, 0)
+			f, err := ioutil.ReadDir(folder.Path)
+			if err != nil {
+				errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
+				return
+			}
+			for _, item := range f {
+				if !item.IsDir() {
+					children = append(children, File{
+						Name:        item.Name(),
+						Type:        "localfile",
+						Size:        formatFileSize(item.Size()),
+						Extension:   Ext(item.Name()),
+						Path:        filepath.Join(folder.Path, item.Name()),
+						CreatedTime: util.Datetime2DateString(item.ModTime()),
+						UpdateTime:  util.Datetime2DateString(item.ModTime()),
+					})
+				}
+			}
+
+			// query content table
+			content, err := model.FindContentByID(folder.ContentID)
+			if err != nil {
+				errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
+				return
+			}
+			cid := ipfs.ParseCid(content.LocationUrl)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer func() {
+				cancel()
+			}()
+			log.Infof("content_id = %d, cid = %s", folder.ContentID, cid)
+			stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
+			if err != nil {
+				errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
+				return
+			}
+			children = append(children, File{
+				Name:      folder.Name,
+				Type:      "ipfsfile",
+				Size:      formatFileSize(stat.Size),
+				Extension: "ipfs",
+				Path:      content.LocationUrl,
+
+				ContentID:       content.ID,
+				ManagedContract: content.ManagedContract,
+				KeyID:           content.KeyID,
+				LocationUrl:     content.LocationUrl,
+				CreatedTime:     util.Datetime2DateString(content.CreatedAt),
+				UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
 			})
+
+			folder.Files = children
+			folders = append(folders, folder)
 		} else {
 			files = append(files, File{
 				Name:        item.Name(),
 				Type:        "localfile",
 				Size:        formatFileSize(item.Size()),
 				Extension:   Ext(item.Name()),
-				Path:        filepath.Join(req.Path, item.Name()),
+				Path:        pathJoin(req.Path, item.Name()),
 				CreatedTime: util.Datetime2DateString(item.ModTime()),
 				UpdateTime:  util.Datetime2DateString(item.ModTime()),
 			})
 		}
 	}
-
-	// for _, folder := range folders {
-	// 	f, err := ioutil.ReadDir(folder.Path)
-	// 	if err != nil {
-	// 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
-	// 		return
-	// 	}
-	// 	for _, item := range f {
-	// 		if !item.IsDir() {
-	// 			files = append(files, File{
-	// 				Name:        item.Name(),
-	// 				Type:        "localfile",
-	// 				Size:        formatFileSize(item.Size()),
-	// 				Extension:   Ext(item.Name()),
-	// 				Path:        filepath.Join(folder.Path, item.Name()),
-	// 				CreatedTime: util.Datetime2DateString(item.ModTime()),
-	// 				UpdateTime:  util.Datetime2DateString(item.ModTime()),
-	// 			})
-	// 		}
-	// 	}
-
-	// 	// query content table
-	// 	// content, err := model.FindContentByID(folder.ContentID)
-	// 	// if err != nil {
-	// 	// 	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
-	// 	// 	return
-	// 	// }
-	// 	// cid := ipfs.ParseCid(content.LocationUrl)
-	// 	// ctx, cancel := context.WithCancel(context.Background())
-	// 	// defer func() {
-	// 	// 	cancel()
-	// 	// }()
-	// 	// stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
-	// 	// if err != nil {
-	// 	// 	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
-	// 	// 	return
-	// 	// }
-	// 	// files = append(files, File{
-	// 	// 	Name:      folder.Name,
-	// 	// 	Type:      "ipfsfile",
-	// 	// 	Size:      formatFileSize(stat.Size),
-	// 	// 	Extension: "ipfs",
-	// 	// 	Path:      content.LocationUrl,
-
-	// 	// 	ContentID:       content.ID,
-	// 	// 	ManagedContract: content.ManagedContract,
-	// 	// 	KeyID:           content.KeyID,
-	// 	// 	LocationUrl:     content.LocationUrl,
-	// 	// 	CreatedTime:     util.Datetime2DateString(content.CreatedAt),
-	// 	// 	UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
-	// 	// })
-	// }
 	c.JSON(http.StatusOK, ListResponse{
 		Folders: folders,
 		Files:   files,
@@ -183,6 +195,7 @@ type CreateRequest struct {
 	EncryptType string `json:"encrypt_type"`
 	Key         string `json:"key"`
 	OriginFile  string `json:"origin_file"`
+	EncryptFile string `json:"encrypt_file"`
 }
 
 type CreateResponse struct {
@@ -197,8 +210,10 @@ func create(c *gin.Context) {
 		return
 	}
 	input := req.OriginFile
-	output := fmt.Sprintf("%s.enc", input)
-
+	output := req.EncryptFile
+	if req.EncryptFile == "" {
+		output = fmt.Sprintf("%s.enc", input)
+	}
 	if req.EncryptType == "aes" {
 		if input == "" || output == "" {
 			fmt.Fprintf(os.Stderr, "\033[1;31;40m invalid file path")
@@ -229,7 +244,7 @@ func create(c *gin.Context) {
 			os.Remove(out.Name())
 			errorResp(c,
 				http.StatusInternalServerError,
-				xerrors.Errorf("Encrypt err: %v", err))
+				xerrors.Errorf("DeriveKey err: %v", err))
 			return
 		}
 		record := &model.KeyRecord{
@@ -242,7 +257,7 @@ func create(c *gin.Context) {
 		}
 		log.Infof("Password saved. [key id is %d ]", keyID)
 		cfg := dare.Config{Key: key}
-		if _, err := decrypt.AesDecrypt(in, out, cfg); err != nil {
+		if _, err := encrypt.AesEncrypt(in, out, cfg); err != nil {
 			out.Close()
 			os.Remove(out.Name())
 			errorResp(c,
@@ -261,4 +276,43 @@ func create(c *gin.Context) {
 			EncryptFile: "",
 		})
 	}
+}
+
+type MoveRequest struct {
+	Src string `json:"src"`
+	Dst string `json:"dst"`
+}
+
+type MoveResponse struct{}
+
+func move(c *gin.Context) {
+	req := MoveRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
+		return
+	}
+
+	if req.Src == "" || req.Dst == "" {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
+		return
+	}
+
+	path := filepath.Dir(req.Dst)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, 0755)
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("I/O Error: %v", err))
+			return
+		}
+	}
+
+	log.Infof("Move file src: %s, dst: %s", req.Src, req.Dst)
+	err := os.Rename(req.Src, req.Dst)
+	if err != nil {
+		errorResp(c,
+			http.StatusInternalServerError,
+			xerrors.Errorf("I/O Error: failed to move %v", err))
+		return
+	}
+	c.JSON(http.StatusOK, MoveResponse{})
 }

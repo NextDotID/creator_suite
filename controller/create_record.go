@@ -1,8 +1,9 @@
 package controller
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
@@ -18,6 +19,7 @@ type CreateRecordRequest struct {
 }
 
 type CreateRecordResponse struct {
+	ContentID int64 `json:"content_id"`
 }
 
 func create_record(c *gin.Context) {
@@ -49,6 +51,7 @@ func create_record(c *gin.Context) {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %w", err))
 		return
 	}
-
-	c.JSON(http.StatusOK, CreateRecordResponse{})
+	c.JSON(http.StatusOK, CreateRecordResponse{
+		ContentID: content.ID,
+	})
 }

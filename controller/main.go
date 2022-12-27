@@ -46,6 +46,7 @@ func Init() {
 
 	Engine.POST("/api/v1/file/list", list)
 	Engine.POST("/api/v1/file/create", create)
+	Engine.POST("/api/v1/file/move", move)
 }
 
 type ErrorResponse struct {
