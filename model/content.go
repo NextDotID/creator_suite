@@ -1,8 +1,9 @@
 package model
 
 import (
-	"golang.org/x/xerrors"
 	"time"
+
+	"golang.org/x/xerrors"
 )
 
 const VALID_STATUS = 1
