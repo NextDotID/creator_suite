@@ -42,6 +42,9 @@
       ],
       "@plugins/*": [
         "src/plugins/*"
+      ],
+      "@types/*": [
+        "src/types/*"
       ]
     },
     "lib": ["esnext", "dom", "dom.iterable"]

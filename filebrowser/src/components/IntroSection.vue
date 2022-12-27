@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-// import creatorsuite from '@img/CreatorSuite.png'
+import creatorsuite from '@img/CreatorSuite.png'
 // srcset="@img/BROWSER-p-500.png 500w, @img/BROWSER.png 555w"
 </script>
 
@@ -93,11 +93,13 @@
   // background-color: #000000;
   // height: 80px;
 }
+
 .section.cc-store-home-wrap {
   background-clip: border-box;
   -webkit-text-fill-color: inherit;
   mix-blend-mode: normal;
 }
+
 .intro-header {
   display: -webkit-box;
   display: -webkit-flex;
@@ -124,6 +126,7 @@
   color: #fff;
   // background-color: #54cde2;
 }
+
 .hero-heading-left {
   position: relative;
   padding: 80px 30px;
@@ -254,6 +257,7 @@
   -ms-flex-pack: center;
   justify-content: center;
 }
+
 .w-inline-block {
   max-width: 100%;
   display: inline-block;
@@ -283,6 +287,7 @@
   max-width: 1000px;
   background-color: transparent;
 }
+
 .w-container:before,
 .w-container:after {
   content: ' ';
@@ -292,9 +297,11 @@
   grid-column-end: 2;
   grid-row-end: 2;
 }
+
 .w-container:after {
   clear: both;
 }
+
 // .w-container .w-row {
 //   margin-left: -10px;
 //   margin-right: -10px;
@@ -322,11 +329,13 @@
   -o-object-fit: fill;
   object-fit: fill;
 }
+
 .text-block {
   margin-left: 0px;
   color: #fff;
   font-size: 24px;
 }
+
 .w-row:before,
 .w-row:after {
   content: ' ';
@@ -336,13 +345,16 @@
   grid-column-end: 2;
   grid-row-end: 2;
 }
+
 .w-row:after {
   clear: both;
 }
+
 .w-row .w-row {
   margin-left: 0;
   margin-right: 0;
 }
+
 .w-col {
   position: relative;
   float: left;
@@ -351,45 +363,59 @@
   padding-left: 10px;
   padding-right: 10px;
   padding-bottom: 30px;
+  padding-top: 30px;
   background-color: transparent;
 }
+
 .w-col .w-col {
   padding-left: 0;
   padding-right: 0;
 }
+
 .w-col-1 {
   width: 8.33333333%;
 }
+
 .w-col-2 {
   width: 16.66666667%;
 }
+
 .w-col-3 {
   width: 25%;
 }
+
 .w-col-4 {
   width: 33.33333333%;
 }
+
 .w-col-5 {
   width: 41.66666667%;
 }
+
 .w-col-6 {
   width: 50%;
 }
+
 .w-col-7 {
   width: 58.33333333%;
 }
+
 .w-col-8 {
   width: 66.66666667%;
 }
+
 .w-col-9 {
   width: 75%;
 }
+
 .w-col-10 {
   width: 83.33333333%;
 }
+
 .w-col-11 {
   width: 91.66666667%;
 }
+
 .w-col-12 {
   width: 100%;
 }

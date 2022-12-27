@@ -22,15 +22,16 @@
 
       <div class="navigation-wrap">
         <nav role="navigation" class="navigation-items w-nav-menu">
-          <router-link to="/foo" class="navigation-item w-nav-link">
+          <router-link to="/" class="navigation-item w-nav-link">
             ABOUT
           </router-link>
-          <router-link to="/foo" class="navigation-item w-nav-link">
-            CONTENTS
+          <router-link to="/browser" class="navigation-item w-nav-link">
+            CONTENT
           </router-link>
-          <router-link to="/foo" class="navigation-item w-nav-link">
+          <router-link to="/" class="navigation-item w-nav-link">
             CONTACT
           </router-link>
+          <!-- <v-btn class="navbutton"> Connect Wallet </v-btn> -->
           <a href="/" class="button w-inline-block">
             <div>Connect Wallet</div>
           </a>
@@ -41,8 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import browser from '@img/BROWSER-p-500.png'
-// srcset="images/BROWSER-p-500.png 500w, images/BROWSER.png 555w"
+import browser from '@img/BROWSER.png'
 </script>
 
 <style lang="less" scoped>
@@ -51,6 +51,19 @@ import browser from '@img/BROWSER-p-500.png'
   // background-color: #202020;
   height: 60px;
 }
+
+.navbutton {
+  background-image: url('@img/explore.png');
+  background-position: 0px 0px;
+  background-size: cover;
+  margin-left: 10px;
+}
+
+.dialog-encrypt {
+  margin-left: 10%;
+  width: 70%;
+}
+
 .navigation {
   display: -webkit-box;
   display: -webkit-flex;

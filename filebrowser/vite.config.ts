@@ -19,7 +19,7 @@ export default defineConfig({
    * @see https://cn.vitejs.dev/config/#server-proxy
    */
   server: {
-    port: 3000,
+    port: 3001,
     // proxy: {
     //   '/devapi': {
     //     target: 'http://192.168.10.198',
@@ -68,6 +68,7 @@ export default defineConfig({
       '@less': resolve('src/assets/less'),
       '@libs': resolve('src/libs'),
       '@cp': resolve('src/components'),
+      '@types': resolve('src/types'),
       '@views': resolve('src/views'),
       // 兼容webpack的静态资源
       '~@': resolve('src'),
@@ -75,6 +76,7 @@ export default defineConfig({
       '~@less': resolve('src/assets/less'),
       '~@libs': resolve('src/libs'),
       '~@cp': resolve('src/components'),
+      '~@types': resolve('src/types'),
       '~@views': resolve('src/views'),
     },
   },

@@ -3,40 +3,25 @@
     <div id="contacts">
       <div id="contacts--contact">
         <p>creatorsuite@next.id</p>
-        <p>This is footer</p>
+        <p><router-link to="/">Go Back</router-link></p>
       </div>
       <div id="contacts--social">
         <div>
           <a href="/">
-            <img
-              src="@img/twitter.png"
-              width="30"
-              alt=""
-              sizes="(max-width: 30px) 30vw, 30px"
-              class="logo-link w-inline-block w--current"
-            />
+            <img src="@img/twitter.png" width="30" alt="" sizes="(max-width: 30px) 30vw, 30px"
+              class="logo-link w-inline-block w--current" />
           </a>
         </div>
         <div>
           <a href="/">
-            <img
-              src="@img/telegram.png"
-              width="30"
-              alt=""
-              sizes="(max-width: 30px) 30vw, 30px"
-              class="logo-link w-inline-block w--current"
-            />
+            <img src="@img/telegram.png" width="30" alt="" sizes="(max-width: 30px) 30vw, 30px"
+              class="logo-link w-inline-block w--current" />
           </a>
         </div>
         <div>
           <a href="/">
-            <img
-              src="@img/nextid.png"
-              width="30"
-              alt=""
-              sizes="(max-width: 30px) 30vw, 30px"
-              class="logo-link w-inline-block w--current"
-            />
+            <img src="@img/nextid.png" width="30" alt="" sizes="(max-width: 30px) 30vw, 30px"
+              class="logo-link w-inline-block w--current" />
           </a>
         </div>
       </div>
@@ -67,26 +52,31 @@ body {
   flex-direction: column;
   align-items: center;
 }
+
 #contacts {
   display: flex;
   justify-content: space-around;
   align-items: center;
   width: 100%;
 }
+
 #contacts--contact {
   text-align: right;
 }
+
 #contacts--social {
   width: 20%;
   display: flex;
   justify-content: space-between;
 }
+
 #contacts--social div {
   height: 30px;
   width: 30px;
   background-color: white;
   border-radius: 50%;
 }
+
 #mentions p {
   font-size: 0.5em;
 }
@@ -166,6 +156,7 @@ body {
   margin-left: auto;
   color: #fff;
 }
+
 .container.cc-subscription-form {
   display: -webkit-box;
   display: -webkit-flex;
@@ -283,6 +274,7 @@ body {
   margin-top: -2px;
   margin-right: 8px;
 }
+
 .logo-image {
   display: block;
 }

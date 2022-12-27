@@ -15,7 +15,7 @@ export const useMessageStore = defineStore('message', {
           // 这里的 this 是当前的 Store 实例
           this.message = newMessage
           resolve('Async done.')
-        }, 3000)
+        }, 8080)
       })
     },
     // 同步更新 message

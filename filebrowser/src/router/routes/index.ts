@@ -20,6 +20,24 @@ const routes: RouteRecordRaw[] = [
    * 子路由示例
    */
   {
+    path: '/browser',
+    name: 'browser',
+    component: () =>
+      import(/* webpackChunkName: "foo" */ '@views/browser/browser.vue'),
+    meta: {
+      title: 'browser',
+    },
+  },
+  {
+    path: '/show_content',
+    name: 'show_content',
+    component: () =>
+      import(/* webpackChunkName: "foo" */ '@views/browser/show_content.vue'),
+    meta: {
+      title: 'show_content',
+    },
+  },
+  {
     path: '/foo',
     name: 'foo',
     component: () =>

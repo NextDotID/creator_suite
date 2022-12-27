@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import Navigation from '@cp/Navigation.vue'
 import IntroSection from '@cp/IntroSection.vue'
-import Footer from '@/components/Footer.vue'
+import Footer from '@cp/Footer.vue'
 </script>
 
 <style lang="less" scoped>
