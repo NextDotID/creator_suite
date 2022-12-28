@@ -21,9 +21,8 @@ func CreateAsset(contentId int64, contractAddr string, tokenAddr string, tokenAm
 	tx_acc := GetTxAccSK()
 	transactOps, err := bind.NewKeyedTransactorWithChainID(tx_acc, GetChainID())
 	tx, err := conn.CreateAsset(transactOps, uint64(contentId), common.HexToAddress(tokenAddr), big.NewInt(tokenAmount))
-
 	if err != nil {
-		return xerrors.Errorf("failed to create the content asset through contract, err:%v, tx:%s", err, tx.Hash().String())
+		return xerrors.Errorf("failed to create the content asset through contract, err:%v, tx:%v", err, tx)
 	}
 	return nil
 }
