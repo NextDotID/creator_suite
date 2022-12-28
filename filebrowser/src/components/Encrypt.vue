@@ -131,7 +131,6 @@ export default defineComponent({
   setup(props) {
     var encrypt_file = props.origin_file + '.enc'
     var encrypt_name = props.name + '.enc'
-    console.log(props,'dialog')
     const store = useIpfsStore()
     const browser = useBrowserStore()
     return {
