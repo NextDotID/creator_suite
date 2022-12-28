@@ -3,7 +3,7 @@
     <v-list lines="two">
       <v-list-subheader inset> Folders </v-list-subheader>
       <v-list-item
-        v-for="folder in dirs"
+        v-for="folder in folders"
         :key="folder.name"
         :title="folder.path"
       >
@@ -42,7 +42,7 @@
       <v-list-subheader inset>Files</v-list-subheader>
 
       <v-list-item
-        v-for="file in contents"
+        v-for="file in files"
         :key="file.name"
         :title="file.name"
         :subtitle="file.path + ',' + file.size + ',' + file.update_time"
@@ -62,7 +62,12 @@
               <v-btn
                 color="primary"
                 v-bind="props"
-                @click="dialog = true"
+                @click="
+                  () => {
+                    currentFile = file
+                    dialog = true
+                  }
+                "
                 style="margin-right: 10px"
               >
                 AES
@@ -72,8 +77,8 @@
             <encrypt
               class="dialog-encrypt"
               type="aes"
-              :name="file.name"
-              :origin_file="file.path"
+              :name="currentFile.name"
+              :origin_file="currentFile.path"
             ></encrypt>
             <v-btn
               class="ma-2"
@@ -116,7 +121,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, reactive, toRefs } from 'vue'
 import encrypt from './Encrypt.vue'
 // import FileService from '@/stores/file'
 // import File from '@/types/File'
@@ -138,7 +143,18 @@ export default defineComponent({
     // const { path } = storeToRefs(browser)
     const { folders } = storeToRefs(browser)
     const { files } = storeToRefs(browser)
-
+    const data = reactive({
+      items: [],
+      filter: '',
+      currentFile: undefined as any,
+      dialog: false,
+      dialog2: false,
+      actions: [
+        { title: 'Rename', icon: 'mdi-rename-outline' },
+        { title: 'Share', icon: 'mdi-share-variant' },
+        { title: 'Delete', icon: 'mdi-delete-outline' },
+      ],
+    })
     const load = async () => {
       browser.loadPath()
     }
@@ -149,40 +165,16 @@ export default defineComponent({
         ctx.emit('refreshed', true)
       }
     }
-    return { refreshed, folders, files }
-  },
-  data() {
-    return {
-      items: [],
-      filter: '',
-      dialog: false,
-      dialog2: false,
-      actions: [
-        { title: 'Rename', icon: 'mdi-rename-outline' },
-        { title: 'Share', icon: 'mdi-share-variant' },
-        { title: 'Delete', icon: 'mdi-delete-outline' },
-      ],
-    }
-  },
-  computed: {
-    dirs() {
-      return this.folders
-    },
-    contents() {
-      return this.files
-    },
-  },
-  methods: {
-    clickMe() {
+    const clickMe = () => {
       console.log('clicked')
-      console.log(this.addNum(4, 2))
-    },
-
-    addNum(num1: number, num2: number): number {
+      console.log(addNum(4, 2))
+    }
+    const addNum = (num1: number, num2: number): number => {
       return num1 + num2
-    },
+    }
+    const refData = toRefs(data)
 
-    list() {},
+    return { ...refData, refreshed, clickMe, folders, files }
   },
 })
 </script>

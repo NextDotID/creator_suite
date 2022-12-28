@@ -9,6 +9,7 @@
         prepend-icon="mdi-file-search-outline"
         single-line
         v-model="path"
+        @keydown.enter="refreshed"
         @click="refreshed"
       ></v-text-field>
       <v-btn variant="text" icon="mdi-magnify" v-on:click="refreshed"></v-btn>
