@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -17,19 +18,40 @@ import (
 
 // EncryptContentByPublicKey Encrypt content using the public key
 // Returns the encrypted content file path
-func EncryptContentByPublicKey(content string, publicKey string) (string, error) {
+func EncryptPasswordByPublicKey(password string, publicKey string) (string, error) {
 	publicKey = strings.TrimPrefix(publicKey, "04")
 	if publicKey == "" || len(publicKey) != 128 {
 		return "", fmt.Errorf("invalid public key")
 	}
-	if content == "" {
+	if password == "" {
 		return "", fmt.Errorf("invalid input content")
 	}
 	keyByte, err := DerivePublicKey(publicKey)
 	if err != nil {
 		return "", err
 	}
-	encryptDataByte, err := EciesEncrypt([]byte(content), keyByte)
+	encryptDataByte, err := EciesEncrypt([]byte(password), keyByte)
+	if err != nil {
+		return "", err
+	}
+	return hexutil.Encode(encryptDataByte), nil
+}
+
+func EncryptContentByPublicKey(filePath string, publicKey string) (string, error) {
+	publicKey = strings.TrimPrefix(publicKey, "04")
+	if publicKey == "" || len(publicKey) != 128 {
+		return "", fmt.Errorf("invalid public key")
+	}
+	keyByte, err := DerivePublicKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+	bytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("invalid public key")
+	}
+	fmt.Printf("content bytes: %s", bytes)
+	encryptDataByte, err := EciesEncrypt(bytes, keyByte)
 	if err != nil {
 		return "", err
 	}

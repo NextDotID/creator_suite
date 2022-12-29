@@ -20,8 +20,10 @@ type GetContentRequest struct {
 }
 
 type GetContentResponse struct {
-	EncryptedDecryptionKey string `json:"encrypted_decryption_key"`
-	LocationUrl            string `json:"location_url"`
+	EncryptedResult string `json:"encrypted_result"`
+	LocationUrl     string `json:"location_url"`
+	EncryptionType  int8   `json:"encryption_type"`
+	FileExtension   string `json:"file_extension"`
 }
 
 func get_content(c *gin.Context) {
@@ -62,14 +64,21 @@ func get_content(c *gin.Context) {
 		return
 	}
 
-	encrypt_key, err := encrypt.EncryptContentByPublicKey(key.Password, req.PublicKey)
+	var encrypted_result string
+	if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
+		encrypted_result, err = encrypt.EncryptPasswordByPublicKey(key.Password, req.PublicKey)
+	} else {
+		encrypted_result, err = encrypt.EncryptContentByPublicKey(content.LocationUrl, req.PublicKey)
+	}
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't encrypt content by public_key: %w", err))
 		return
 	}
 
 	c.JSON(http.StatusOK, GetContentResponse{
-		EncryptedDecryptionKey: encrypt_key,
-		LocationUrl:            content.LocationUrl,
+		EncryptedResult: encrypted_result,
+		LocationUrl:     content.LocationUrl,
+		EncryptionType:  content.EncryptionType,
+		FileExtension:   content.FileExtension,
 	})
 }
