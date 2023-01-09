@@ -1,111 +1,49 @@
-# creator_suite
+# CreatorSuite
+CreatorSuite is designed to be a useful tool in Core Service to help content creator to distribute their content.
 
-## cryptool
+## CreatorSuite Service
 
-### creator_suite command tool `cryptool`
+### CreatorSuite Service API
+CreatorSuite defined two api to implement the functions of list content asset and distribute content.
 
-A command-line applications to encrypt or decrypt your data.
-`AES-GCM` can be used to encrypt/decrypt files, backups or even large object.
+[API doc](https://github.com/nextdotid/creator_suite/tree/main/docs/api.apib)
 
-### Install
+With the API of create, creator's work flow will be like:
+![image](docs/creators_workflow.png)
 
-```
-$ git clone https://github.com/nextdotid/creator_suite
-$ cd creator_suite && make install-tool
-```
+With the API of get-content, the workflow will be like:
+![image](docs/buyers_workflow.png)
 
-### Help
+### CreatorSuite Service Database
+CreatorSuite Service needs two tables that help to record listed content assets.
+One is key_record, when the creators choose to use symmetric encryption to encrypt their content assets, they need to create the key first.
 
-Help command:
+| Field      | Type           | Description |
+|------------|----------------|-------------|
+| id         | auto_increased | int         |
+| password   |                | string      |
+| created_at |                | datetime    |
+| updated_at |                | datetime    |
 
-```
-$ ./cryptool help
+The other one is Content， which is the record of content assets
 
-NAME:
-   cryptool - Crypto Tools for CreatorSuite
+| Field            | Type           | Description |
+|------------------|----------------|-------------|
+| id               | auto_increased | int         |
+| location_url     | string         |             |
+| managed_contract | string         |             |
+| chain            | string         |             |
+| creator_address  | string         |             |
+| encryption_type  | string         |             |
+| file_extension   | int            |             |
+| key_id           | int            | FK          |
+| created_at       | datetime       |             |
+| updated_at       | datetime       |             | 
+|                  |                |             |
 
-USAGE:
-   cryptool [global options] command [command options] [arguments...]
+## Cryptool
+Since the whole solution in CreatorSuite depends on cryptography, we also provide a command-line applications, 
+Cryptool, to encrypt or decrypt the data.
+[cryptool doc](https://github.com/nextdotid/creator_suite/tree/main/docs/cryptool.md)
 
-VERSION:
-   1.0.0.rc1
 
-COMMANDS:
-   encrypt, encrypt, en  encrypt a file
-   decrypt, decrypt, de  decrypt a file
-   help, h               Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --help, -h     show help
-   --version, -v  print the version
-```
-
-### Ecies: encrypt & decrypt
-
-`./cryptool ecc`
-
-```
-? Choose action:
-   ▸ encrypt
-      Enter Raw Password: 1234567890123456
-      Enter Public Key(64 bytes): ********************************************************************************************************************************
-      Encrypted Password: 0x042ce177172b8a54e11b57e4914b2ecc5070a0c6676999f4905884f1b805e97abfd2ca414f3fe94d5d78b9908f0f25230470a04056f6ab8735e3caacb606bdefce1a5f6db49bb0de18b3df17421679acaf2c16c158311972bca1ccc3131efe22620fbb2162f3ed36aa4f9be718e78eeff16538632abb73c80c759b6d47ed9e7dfb
-   ▸ decrypt
-      Enter Private Key(32 bytes): ****************************************************************
-      Raw Password: 1234567890123456
-```
-
-### Encrypt & Upload
-
-`$ ./cryptool encrypt`
-
-```
-Encrypting and publishing files to ipfs
-
- Origin File (Input): test-nextdotid.png
- Encrypt File (Output): nextdotid.png.encrypt
- Enter Raw Password: ********************
- Encrypt content finished! nextdotid.png.encrypt
- Password saved. [key id is 6 ]
- ? Do you want to publish your file to IPFS?:
-   ▸ Yes
-      IPFS Host: http://localhost
-      IPFS API Port: 5001
-      IPFS Gateway Port: 8080
-      IPFS Peer ID (Authorization):
-      IPFS Public Key (Authorization):
-      Upload successfully!
-      Path: http://localhost:8080/ipfs/{Cid}
-   ▸ No
-      Finished!
-```
-
-### Decrypt & Download
-
-`$ ./cryptool decrypt`
-
-```
-Download and Decrypting files from ipfs
-Use the arrow keys to navigate: ↓ ↑ → ←
-   ? Do you want to download your file from IPFS?:
-   ▸ Yes
-      IPFS Host: http://localhost
-      IPFS API Port: 5001
-      IPFS Gateway Port: 8080
-      IPFS Peer ID (Authorization):
-      IPFS Public Key (Authorization):
-      IPFS Location Url (/ipfs/${cid}): /ipfs/Cid
-      Download File: nextdotid.png.download
-      Download successfully!
-      Path: nextdotid.png.download
-      ✔  Decrypt File (Output): nextdotid_decrypt.png
-      ? Choose password mode:
-         ▸ Raw Password
-            Enter Raw Password: ****************
-            Encrypt content finished! nextdotid_decrypt.png
-   ▸ No
-      Origin File (Input): nextdotid.png.encrypt
-      Decrypt File (Output): nextdotid_decrypt2.png
-      ? Choose password mode:
-         ▸ Encrypted Password
-```
