@@ -42,6 +42,9 @@ After paying for a specific content asset, the buyer can call the get-content ap
         {
             "encrypted_result": "0x04c4557e6612db47e5aced68e172c0ea06bdb92c6d81022acb2b893f1830f980dd1b68dfa97c410cf2d0ed69ffb50190cb2f76a52c6ffa9211e5a389b0b373a891fca5e84905201348e9ff47485b259e37ade9668fb1a018b5979b4a3736d50483428fe391af061b5239d1cb03dc5a23cb9e9781943affbe3efddf46952accbf1d0a16",
             "location_url": "QmX4RZShLTK7FPusDmh3b2UV7BQVQ8WsyPwX4ZEkDwMJef",
-            "encryption_type": 1,
+            "encryption_type": 1, //encryption_type=1, use AEAD to encryption/decryption the content, encrypted_result is the encrypted password for the decrypted content in the IPFS. When the type=2, the encrypted_result is the original content that encrypted by
+      the buyers own publicKey
             "file_extension": "jpg"
         }
+
+
