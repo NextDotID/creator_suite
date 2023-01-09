@@ -40,3 +40,10 @@ The other one is Content， which is the record of content assets
 | created_at       | datetime       |             |
 | updated_at       | datetime       |             | 
 |                  |                |             |
+
+## Cryptool
+Since the whole solution in CreatorSuite depends on cryptography, we also provide a command-line applications, 
+Cryptool, to encrypt or decrypt the data.
+[cryptool doc](https://github.com/nextdotid/creator_suite/tree/main/docs/cryptool.md)
+
+
