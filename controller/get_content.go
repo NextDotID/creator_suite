@@ -1,13 +1,14 @@
 package controller
 
 import (
+	"strconv"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/encrypt"
 	log "github.com/sirupsen/logrus"
-	"strconv"
 
 	"net/http"
 
