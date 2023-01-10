@@ -23,6 +23,7 @@ type Content struct {
 	LocationUrl     string
 	FileExtension   string
 	Status          int8 `gorm:"default:1"`
+	Description     string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -39,7 +40,8 @@ func FindContentByID(ID int64) (content *Content, err error) {
 	return content, nil
 }
 
-func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8, fileExtension string, network types.Network) (content *Content, err error) {
+func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8,
+	fileExtension string, network types.Network, description string) (content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
 	c.ManagedContract = managedContract
@@ -48,6 +50,7 @@ func CreateRecord(locateUrl string, managedContract string, keyID int64, encrypt
 	c.EncryptionType = encryptionType
 	c.FileExtension = fileExtension
 	c.Network = string(network)
+	c.Description = description
 	tx := DB.Create(c)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
