@@ -13,7 +13,7 @@ import (
 )
 
 // STORAGE which defines in docker-compose
-const STORAGE = "./storage"
+const STORAGE = "/storage"
 
 type ShowContentRequest struct {
 	ContentID int64 `json:"content_id"`
@@ -21,7 +21,7 @@ type ShowContentRequest struct {
 
 type ShowContentResponse struct {
 	ContentID      int64  `json:"content_id"`
-	FileName       string `json:"file_name"`
+	ContentName    string `json:"content_name"`
 	PreviewImage   []byte `json:"preview_image"`
 	Description    string `json:"description"`
 	EncryptionType int8   `json:"encryption_type"`
@@ -75,10 +75,21 @@ func show_content(c *gin.Context) {
 	for _, item := range list {
 		if !item.IsDir() {
 			if item.Name() == "preview.png" || item.Name() == "preview.jpg" || item.Name() == "preview.jpeg" {
+				// TODO: waiting for frontend
 				resp.PreviewImage = nil
 			} else {
-				resp.FileName = strings.TrimRight(item.Name(), ".enc")
-				resp.FileSize = formatFileSize(item.Size())
+				if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
+					if content.ContentName == strings.TrimRight(item.Name(), ".enc") {
+						resp.ContentName = item.Name()
+						resp.FileSize = formatFileSize(item.Size())
+					}
+					resp.ContentName = item.Name()
+				} else if content.EncryptionType == model.ENCRYPTION_TYPE_ECC {
+					if content.ContentName == item.Name() {
+						resp.ContentName = item.Name()
+						resp.FileSize = formatFileSize(item.Size())
+					}
+				}
 			}
 		}
 	}
