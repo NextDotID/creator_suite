@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/nextdotid/creator_suite/types"
 	"golang.org/x/xerrors"
 	"time"
 )
@@ -14,6 +15,7 @@ const ENCRYPTION_TYPE_ECC = 2
 type Content struct {
 	ID              int64 `gorm:"primarykey"`
 	ManagedContract string
+	Network         string
 	CreatorAddress  string
 	EncryptionType  int8 `gorm:"default:1"`
 	KeyID           int64
@@ -36,7 +38,7 @@ func FindContentByID(ID int64) (content *Content, err error) {
 	return content, nil
 }
 
-func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8, fileExtension string) (content *Content, err error) {
+func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8, fileExtension string, network types.Network) (content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
 	c.ManagedContract = managedContract
@@ -44,6 +46,7 @@ func CreateRecord(locateUrl string, managedContract string, keyID int64, encrypt
 	c.CreatorAddress = GetTxAccAddr().String()
 	c.EncryptionType = encryptionType
 	c.FileExtension = fileExtension
+	c.Network = string(network)
 	tx := DB.Create(c)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
