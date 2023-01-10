@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -315,4 +316,64 @@ func move(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, MoveResponse{})
+}
+
+type CopyRequest struct {
+	Src string `json:"src"`
+	Dst string `json:"dst"`
+}
+
+type CopyResponse struct{}
+
+func copy(c *gin.Context) {
+	req := CopyRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
+		return
+	}
+
+	if req.Src == "" || req.Dst == "" {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
+		return
+	}
+
+	path := filepath.Dir(req.Dst)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, 0755)
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("I/O Error: %v", err))
+			return
+		}
+	}
+
+	log.Infof("Move file src: %s, dst: %s", req.Src, req.Dst)
+
+	fin, err := os.Open(req.Src)
+	if err != nil {
+		errorResp(c,
+			http.StatusInternalServerError,
+			xerrors.Errorf("I/O Error: failed to Open %v", err))
+		return
+	}
+
+	defer fin.Close()
+
+	fout, err := os.Create(req.Dst)
+	if err != nil {
+		errorResp(c,
+			http.StatusInternalServerError,
+			xerrors.Errorf("I/O Error: failed to Create %v", err))
+		return
+	}
+
+	defer fout.Close()
+
+	_, err = io.CopyBuffer(fout, fin, make([]byte, 32*1024))
+	if err != nil {
+		errorResp(c,
+			http.StatusInternalServerError,
+			xerrors.Errorf("I/O Error: failed to copy %v", err))
+		return
+	}
+	c.JSON(http.StatusOK, CopyResponse{})
 }
