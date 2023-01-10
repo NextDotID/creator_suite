@@ -99,12 +99,26 @@ func list(c *gin.Context) {
 
 	folders := make([]Folder, 0)
 	files := make([]File, 0)
+
+	// list content table
+	contents, err := model.ListContent()
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
+		return
+	}
+	contentMap := make(map[int64]model.Content)
+	for _, c := range contents {
+		contentMap[c.ID] = c
+	}
+
+	// list volumes: STORAGE
+	log.Infof("list storage volumes: %s", req.Path)
 	list, err := ioutil.ReadDir(req.Path)
 	if err != nil {
+		log.Infof("I/O error: %v", err)
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
 		return
 	}
-
 	for _, item := range list {
 		if item.IsDir() {
 			contentID, err := strconv.ParseInt(item.Name(), 10, 32)
@@ -119,7 +133,6 @@ func list(c *gin.Context) {
 				CreatedTime: util.Datetime2DateString(item.ModTime()),
 				UpdateTime:  util.Datetime2DateString(item.ModTime()),
 			}
-
 			children := make([]File, 0)
 			f, err := ioutil.ReadDir(folder.Path)
 			if err != nil {
@@ -140,41 +153,48 @@ func list(c *gin.Context) {
 				}
 			}
 
-			// query content table
-			content, err := model.FindContentByID(folder.ContentID)
-			if err != nil {
-				errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
-				return
-			}
-			cid := ipfs.ParseCid(content.LocationUrl)
-			ctx, cancel := context.WithCancel(context.Background())
-			defer func() {
-				cancel()
-			}()
-			log.Infof("content_id = %d, cid = %s", folder.ContentID, cid)
-			stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
-			if err != nil {
-				errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
-				return
-			}
-			children = append(children, File{
-				Name:      folder.Name,
-				Type:      "ipfsfile",
-				Size:      formatFileSize(stat.Size),
-				Extension: "ipfs",
-				Path:      content.LocationUrl,
+			if content, ok := contentMap[contentID]; ok {
+				if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
+					cid := ipfs.ParseCid(content.LocationUrl)
+					ctx, cancel := context.WithCancel(context.Background())
+					defer func() {
+						cancel()
+					}()
+					log.Infof("content_id = %d, cid = %s", content.ID, cid)
+					stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
+					if err != nil {
+						errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
+						return
+					}
+					children = append(children, File{
+						Name:      folder.Name,
+						Type:      "ipfsfile",
+						Size:      formatFileSize(stat.Size),
+						Extension: "ipfs",
+						Path:      content.LocationUrl,
 
-				ContentID:       content.ID,
-				ManagedContract: content.ManagedContract,
-				KeyID:           content.KeyID,
-				LocationUrl:     content.LocationUrl,
-				CreatedTime:     util.Datetime2DateString(content.CreatedAt),
-				UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
-			})
-
+						ContentID:       content.ID,
+						ManagedContract: content.ManagedContract,
+						KeyID:           content.KeyID,
+						LocationUrl:     content.LocationUrl,
+						CreatedTime:     util.Datetime2DateString(content.CreatedAt),
+						UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
+					})
+				}
+			}
 			folder.Files = children
 			folders = append(folders, folder)
-		} else {
+		}
+	}
+
+	// list host mount path
+	list2, err := ioutil.ReadDir(req.Path)
+	if err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
+		return
+	}
+	for _, item := range list2 {
+		if !item.IsDir() {
 			files = append(files, File{
 				Name:        item.Name(),
 				Type:        "localfile",
@@ -193,7 +213,7 @@ func list(c *gin.Context) {
 }
 
 type CreateRequest struct {
-	EncryptType string `json:"encrypt_type"`
+	EncryptType int    `json:"encrypt_type"`
 	Key         string `json:"key"`
 	OriginFile  string `json:"origin_file"`
 	EncryptFile string `json:"encrypt_file"`
@@ -215,7 +235,7 @@ func create(c *gin.Context) {
 	if req.EncryptFile == "" {
 		output = fmt.Sprintf("%s.enc", input)
 	}
-	if req.EncryptType == "aes" {
+	if req.EncryptType == model.ENCRYPTION_TYPE_AES {
 		if input == "" || output == "" {
 			fmt.Fprintf(os.Stderr, "\033[1;31;40m invalid file path")
 			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
