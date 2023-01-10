@@ -43,5 +43,7 @@ services:
       TX_ACCOUNT: ${TX_ACCOUNT}
       RPC_SERVER_ON_CHAIN: ${RPC_SERVER_ON_CHAIN}
       CHAIN_ID: ${CHAIN_ID}
+    volumes:
+      - ./storage:/storage
 volumes:
   creator_suite_db: {}
