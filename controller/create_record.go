@@ -16,6 +16,8 @@ type CreateRecordRequest struct {
 	PaymentTokenAddress string `json:"payment_token_address"`
 	PaymentTokenAmount  int64  `json:"payment_token_amount"`
 	KeyID               int64  `json:"key_id"`
+	EncryptionType      int8   `json:"encryption_type"`
+	FileExtension       string `json:"file_extension"`
 }
 
 type CreateRecordResponse struct {
@@ -35,7 +37,7 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID)
+	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID, req.EncryptionType, req.FileExtension)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return

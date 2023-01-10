@@ -9,12 +9,17 @@ import (
 const VALID_STATUS = 1
 const INVALID_STATUS = 0
 
+const ENCRYPTION_TYPE_AES = 1
+const ENCRYPTION_TYPE_ECC = 2
+
 type Content struct {
 	ID              int64 `gorm:"primarykey"`
 	ManagedContract string
 	CreatorAddress  string
+	EncryptionType  int8 `gorm:"default:1"`
 	KeyID           int64
 	LocationUrl     string
+	FileExtension   string
 	Status          int8 `gorm:"default:1"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -32,12 +37,14 @@ func FindContentByID(ID int64) (content *Content, err error) {
 	return content, nil
 }
 
-func CreateRecord(LocateUrl string, managedContract string, keyID int64) (content *Content, err error) {
+func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8, fileExtension string) (content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
 	c.ManagedContract = managedContract
-	c.LocationUrl = LocateUrl
+	c.LocationUrl = locateUrl
 	c.CreatorAddress = GetTxAccAddr().String()
+	c.EncryptionType = encryptionType
+	c.FileExtension = fileExtension
 	tx := DB.Create(c)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
