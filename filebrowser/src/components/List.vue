@@ -2,11 +2,7 @@
   <v-card width="100%">
     <v-list lines="two">
       <v-list-subheader inset> Folders </v-list-subheader>
-      <v-list-item
-        v-for="folder in folders"
-        :key="folder.name"
-        :title="folder.path"
-      >
+      <v-list-item v-for="folder in folders" :key="folder.name" :title="folder.path">
         <template v-slot:prepend>
           <v-avatar color="grey-lighten-1" class="file-avatar">
             <!-- <v-icon color="white">mdi-folder</v-icon> -->
@@ -15,25 +11,18 @@
           </v-avatar>
         </template>
 
-        <v-list-item
-          v-for="file in folder.children"
-          :key="file.name"
-          :title="file.name"
-          :subtitle="file.path + ',' + file.size + ',' + file.update_time"
-        >
+        <v-list-item v-for="file in folder.children" :key="file.name" :title="file.name"
+          :subtitle="file.path + ',' + file.size + ',' + file.update_time">
           <template v-slot:prepend>
             <v-avatar>
-              <v-icon color="white">mdi-lock-outline</v-icon>
+              <v-icon color="white"> {{ file.icon }} </v-icon>
             </v-avatar>
           </template>
         </v-list-item>
 
         <template v-slot:append>
-          <v-btn
-            color="grey-lighten-1"
-            icon="mdi-information"
-            variant="text"
-          ></v-btn>
+          <v-btn color="grey-lighten-1" icon="mdi-rename-outline" variant="text"></v-btn>
+          <v-btn color="grey-lighten-1" icon="mdi-share-variant" variant="text"></v-btn>
         </template>
       </v-list-item>
 
@@ -41,17 +30,12 @@
 
       <v-list-subheader inset>Files</v-list-subheader>
 
-      <v-list-item
-        v-for="file in files"
-        :key="file.name"
-        :title="file.name"
-        :subtitle="file.path + ',' + file.size + ',' + file.update_time"
-        lines="three"
-      >
+      <v-list-item v-for="file in files" :key="file.name" :title="file.name"
+        :subtitle="file.path + ',' + file.size + ',' + file.update_time" lines="three">
         <!-- :subtitle="file.path + file.size + file.update_time" -->
         <template v-slot:prepend>
           <v-avatar>
-            <v-icon color="white">mdi-file-lock-open-outline</v-icon>
+            <v-icon color="white"> {{ file.icon }}</v-icon>
           </v-avatar>
         </template>
         <!-- <v-spacer></v-spacer> -->
@@ -59,44 +43,51 @@
         <template v-slot:append>
           <v-dialog v-model="dialog" persistent>
             <template v-slot:activator="{ props }">
-              <v-btn
-                color="primary"
-                v-bind="props"
-                @click="
-                  () => {
-                    currentFile = file
-                    dialog = true
-                  }
-                "
-                style="margin-right: 10px"
-              >
+              <v-btn color="primary" v-bind="props" @click="
+                () => {
+                  currentFile = file
+                  dialog = true
+                }
+              " style="margin-right: 10px">
                 AES
                 <v-icon end icon="mdi-lock-outline"></v-icon>
               </v-btn>
             </template>
-            <encrypt
-              class="dialog-encrypt"
-              type="aes"
-              :name="currentFile.name"
-              :origin_file="currentFile.path"
-            ></encrypt>
-            <v-btn
-              class="ma-2"
-              color="green-darken-1"
-              variant="text"
-              @click="dialog = false"
-            >
+            <encrypt class="dialog-encrypt" :type=1 :name="currentFile.name" :origin_file="currentFile.path"
+              :extension="currentFile.extension">
+            </encrypt>
+            <v-btn class="ma-2" color="green-darken-1" variant="text" @click="dialog = false">
               Close
             </v-btn>
           </v-dialog>
 
-          <v-btn class="ma-2" color="red">
+          <v-dialog v-model="dialog2" persistent>
+            <template v-slot:activator="{ props }">
+              <v-btn color="red" v-bind="props" @click="
+                () => {
+                  currentFile = file
+                  dialog2 = true
+                }
+              " style="margin-right: 10px">
+                ECC
+                <v-icon end icon="mdi-lock-outline"></v-icon>
+              </v-btn>
+            </template>
+            <ecies class="dialog-encrypt" :type=2 :name="currentFile.name" :origin_file="currentFile.path"
+              :extension="currentFile.extension">
+            </ecies>
+            <v-btn class="ma-2" color="green-darken-1" variant="text" @click="dialog2 = false">
+              Close
+            </v-btn>
+          </v-dialog>
+
+          <!-- <v-btn class="ma-2" color="red">
             ECC
             <v-icon end icon="mdi-lock-outline"></v-icon>
-          </v-btn>
-          <v-btn class="ma-2" size="40" icon="mdi-share-variant"></v-btn>
+          </v-btn> -->
+          <!-- <v-btn class="ma-2" size="40" icon="mdi-share-variant"></v-btn>
           <v-btn class="ma-2" size="40" icon="mdi-rename-outline"></v-btn>
-          <v-btn class="ma-2" size="40" icon="mdi-delete-outline"></v-btn>
+          <v-btn class="ma-2" size="40" icon="mdi-delete-outline"></v-btn> -->
           <v-btn color="grey-lighten-1" icon="mdi-information" variant="text">
             <!-- <v-icon>mdi-information</v-icon> -->
             <!-- <v-tooltip activator="parent" location="top"> TODO </v-tooltip> -->
@@ -123,6 +114,7 @@
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from 'vue'
 import encrypt from './Encrypt.vue'
+import ecies from './Ecies.vue'
 // import FileService from '@/stores/file'
 // import File from '@/types/File'
 // import { Item, File, ListResponse } from '@/types/file'
@@ -132,6 +124,7 @@ import { useBrowserStore } from '@/stores'
 export default defineComponent({
   components: {
     encrypt,
+    ecies,
   },
   props: {
     refreshPending: Boolean,
@@ -184,11 +177,13 @@ export default defineComponent({
   margin-left: 10%;
   width: 70%;
 }
+
 .file-avatar {
   background-image: url('@img/explore.png');
   background-position: 0px 0px;
   background-size: cover;
 }
+
 .menu {
   width: 500px;
 }

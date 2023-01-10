@@ -1,23 +1,9 @@
 <template>
-  <div
-    data-collapse="medium"
-    data-animation="default"
-    data-duration="400"
-    data-easing="ease"
-    data-easing2="ease"
-    role="banner"
-    class="navigation w-nav"
-    id="header"
-  >
+  <div data-collapse="medium" data-animation="default" data-duration="400" data-easing="ease" data-easing2="ease"
+    role="banner" class="navigation w-nav" id="header">
     <div class="navigation-items">
       <a href="/">
-        <img
-          :src="browser"
-          width="65"
-          alt=""
-          sizes="(max-width: 479px) 100vw, 65px"
-          class="logo-image"
-        />
+        <img :src="browser" width="65" alt="" sizes="(max-width: 479px) 100vw, 65px" class="logo-image" />
       </a>
 
       <div class="navigation-wrap">
@@ -75,8 +61,9 @@ import browser from '@img/BROWSER.png'
   -ms-flex-align: center;
   align-items: center;
   border-style: none none solid;
-  border-width: 1px;
+  border-width: 2px;
   border-color: #46d0e1;
+  // border-color: black;
   background-color: #fff;
   padding-right: 30px;
   padding-left: 30px;
@@ -154,6 +141,7 @@ import browser from '@img/BROWSER.png'
   background: #000000;
   z-index: 1000;
 }
+
 .w-nav:before,
 .w-nav:after {
   content: ' ';
@@ -199,6 +187,7 @@ import browser from '@img/BROWSER.png'
   -ms-flex-pack: center;
   justify-content: center;
 }
+
 .w-inline-block {
   max-width: 100%;
   display: inline-block;
