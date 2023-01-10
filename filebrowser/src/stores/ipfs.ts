@@ -8,7 +8,7 @@ export const useIpfsStore = defineStore('ipfs', {
   state: () => ({
     peer_id: '',
     pub_key: '',
-    host: 'http://localhost',
+    host: 'ipfs_host',
     api_port: 5001,
     gateway_port: 8080,
     message: 'Not Connected',

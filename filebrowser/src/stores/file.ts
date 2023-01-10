@@ -1,6 +1,6 @@
 import http from '@/plugins/http-common'
 import { defineStore } from 'pinia'
-import { ListResponse, ListRequest } from '@/types/file'
+import { ListResponse, ListRequest, Folder, File } from '@/types/file'
 import { useIpfsStore } from '@/stores'
 
 // class FileService {
@@ -22,10 +22,37 @@ import { useIpfsStore } from '@/stores'
 //   }
 // }
 
+const fileIcons = {
+  zip: "mdi-folder-zip-outline",
+  rar: "mdi-folder-zip-outline",
+  htm: "mdi-language-html5",
+  html: "mdi-language-html5",
+  js: "mdi-nodejs",
+  json: "mdi-code-json",
+  md: "mdi-language-markdown-outline",
+  pdf: "mdi-file-pdf-box",
+  png: "mdi-file-image",
+  jpg: "mdi-file-image",
+  jpeg: "mdi-file-image",
+  mp4: "mdi-movie",
+  mp3: "mdi-music-circle",
+  mkv: "mdi-movie",
+  avi: "mdi-movie",
+  wmv: "mdi-movie",
+  mov: "mdi-movie",
+  txt: "mdi-file-document-outline",
+  xls: "mdi-microsoft-excel",
+  xlsx: "mdi-microsoft-excel",
+  csv: "mdi-file-delimited",
+  ipfs: "mdi-cloud-check-outline",
+  enc: "mdi-lock-check",
+  other: "mdi-file-outline"
+};
+
 // export default new FileService()
 export const useBrowserStore = defineStore('browser', {
   state: () => ({
-    path: './storage',
+    path: '/storage',
     folders: [
       {
         name: '1',
@@ -39,6 +66,7 @@ export const useBrowserStore = defineStore('browser', {
             type: 'localfile',
             size: '15MB',
             extension: 'zip',
+            icon: 'mdi-folder-zip-outline',
             path: 'storage/1/mdi-folder-zip-outline.zip',
             content_id: 1,
             asset_id: 0,
@@ -61,7 +89,8 @@ export const useBrowserStore = defineStore('browser', {
             type: 'localfile',
             size: '27KB',
             extension: 'md',
-            path: 'storage/2/mdi-markdown.md',
+            icon: 'mdi-language-markdown-outline',
+            path: 'storage/2/mdi-language-markdown-outline.md',
             content_id: 2,
             asset_id: 0,
             key_id: 2,
@@ -83,6 +112,7 @@ export const useBrowserStore = defineStore('browser', {
             type: 'localfile',
             size: '27KB',
             extension: 'png',
+            icon: 'mdi-file-image',
             path: 'storage/3/mdi-file-image.png',
             content_id: 3,
             asset_id: 0,
@@ -93,13 +123,14 @@ export const useBrowserStore = defineStore('browser', {
           },
         ],
       },
-    ],
+    ] as Folder[],
     files: [
       {
         name: 'mdi-folder-zip-outline',
         type: 'localfile',
         size: '15MB',
         extension: 'zip',
+        icon: 'mdi-folder-zip-outline',
         path: 'storage/1/mdi-folder-zip-outline.zip',
         content_id: 1,
         asset_id: 0,
@@ -113,7 +144,8 @@ export const useBrowserStore = defineStore('browser', {
         type: 'localfile',
         size: '27KB',
         extension: 'md',
-        path: 'storage/2/mdi-markdown.md',
+        icon: 'mdi-language-markdown-outline',
+        path: 'storage/2/mdi-language-markdown-outline.md',
         content_id: 2,
         asset_id: 0,
         key_id: 2,
@@ -126,6 +158,7 @@ export const useBrowserStore = defineStore('browser', {
         type: 'localfile',
         size: '27KB',
         extension: 'png',
+        icon: 'mdi-file-image',
         path: 'storage/3/mdi-file-image.png',
         content_id: 3,
         asset_id: 0,
@@ -134,7 +167,7 @@ export const useBrowserStore = defineStore('browser', {
         created_time: '2022-12-20 11:00:01',
         update_time: '2022-12-20 11:00:01',
       },
-    ],
+    ] as File[],
   }),
   actions: {
     // 异步更新 message
@@ -164,6 +197,24 @@ export const useBrowserStore = defineStore('browser', {
           console.log(response.data)
           this.folders = response.data.folders
           this.files = response.data.files
+          for (var i = 0; i < this.files.length; i++) {
+            const ext = this.files[i].extension
+            if (!(ext in fileIcons)) {
+              this.files[i].icon = fileIcons.other
+            } else {
+              this.files[i].icon = fileIcons[ext]
+            }
+          }
+          for (var i = 0; i < this.folders.length; i++) {
+            for (var j = 0; j < this.folders[i].children.length; j++) {
+              const ext = this.folders[i].children[j].extension
+              if (!(ext in fileIcons)) {
+                this.folders[i].children[j].icon = fileIcons.other
+              } else {
+                this.folders[i].children[j].icon = fileIcons[ext]
+              }
+            }
+          }
         })
         .catch((e: Error) => {
           console.log(e)

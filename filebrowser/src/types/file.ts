@@ -15,6 +15,7 @@ export interface File {
   type: string
   size: string
   extension: string
+  icon?: string
   path: string
 
   content_id: number
@@ -40,7 +41,7 @@ export interface ListRequest {
 }
 
 export interface CreateRequest {
-  encrypt_type: string
+  encrypt_type: number
   key: string
   origin_file: string
   encrypt_file: string
@@ -54,6 +55,11 @@ export interface CreateResponse {
 }
 
 export interface MoveRequest {
+  src: string
+  dst: string
+}
+
+export interface CopyRequest {
   src: string
   dst: string
 }
