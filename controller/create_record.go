@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/nextdotid/creator_suite/types"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
@@ -11,13 +12,14 @@ import (
 )
 
 type CreateRecordRequest struct {
-	ContentLocateUrl    string `json:"content_locate_url"`
-	ManagedContract     string `json:"managed_contract"`
-	PaymentTokenAddress string `json:"payment_token_address"`
-	PaymentTokenAmount  int64  `json:"payment_token_amount"`
-	KeyID               int64  `json:"key_id"`
-	EncryptionType      int8   `json:"encryption_type"`
-	FileExtension       string `json:"file_extension"`
+	ContentLocateUrl    string        `json:"content_locate_url"`
+	ManagedContract     string        `json:"managed_contract"`
+	Network             types.Network `json:"network"`
+	PaymentTokenAddress string        `json:"payment_token_address"`
+	PaymentTokenAmount  int64         `json:"payment_token_amount"`
+	KeyID               int64         `json:"key_id"`
+	EncryptionType      int8          `json:"encryption_type"`
+	FileExtension       string        `json:"file_extension"`
 }
 
 type CreateRecordResponse struct {
@@ -30,6 +32,10 @@ func create_record(c *gin.Context) {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
 		return
 	}
+	if !req.Network.IsValid() {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Cannot support the network right now"))
+		return
+	}
 
 	kr, err := model.FindKeyRecordByID(req.KeyID)
 	if err != nil || kr == nil {
@@ -37,7 +43,7 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID, req.EncryptionType, req.FileExtension)
+	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID, req.EncryptionType, req.FileExtension, req.Network)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
