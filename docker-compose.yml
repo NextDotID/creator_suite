@@ -34,8 +34,6 @@ services:
       - server
     ports:
       - "80:80"
-    volumes:
-      - ~/storage:/storage
   server:
     image: creator-suite:latest
     container_name: creator-suite
