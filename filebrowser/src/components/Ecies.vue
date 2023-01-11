@@ -27,7 +27,6 @@
 
       <v-window-item :value="2">
         <v-card-text>
-          <v-text-field label="Location Url" v-model="content_url"></v-text-field>
           <v-select :items="['ethereum', 'goerli', 'polygon', 'mumbai']" label="Network" v-model="network"></v-select>
           <v-text-field label="Managed Contract" v-model="managed_contract"></v-text-field>
           <v-text-field label="Payment Token Address" v-model="payment_token_address"></v-text-field>
