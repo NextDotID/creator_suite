@@ -1,9 +1,10 @@
 package model
 
 import (
+	"time"
+
 	"github.com/nextdotid/creator_suite/types"
 	"golang.org/x/xerrors"
-	"time"
 )
 
 const VALID_STATUS = 1
@@ -19,9 +20,11 @@ type Content struct {
 	CreatorAddress  string
 	EncryptionType  int8 `gorm:"default:1"`
 	KeyID           int64
+	ContentName     string
 	LocationUrl     string
 	FileExtension   string
 	Status          int8 `gorm:"default:1"`
+	Description     string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -38,20 +41,41 @@ func FindContentByID(ID int64) (content *Content, err error) {
 	return content, nil
 }
 
-func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8, fileExtension string, network types.Network) (content *Content, err error) {
+func ListContent() ([]Content, error) {
+	contents := make([]Content, 0)
+	tx := DB.Model(&Content{}).Where("status = ?", 1).Find(&contents)
+	if tx.Error != nil {
+		return nil, xerrors.Errorf("error when finding content: %w", tx.Error)
+	}
+	return contents, nil
+}
+
+func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8,
+	fileExtension string, network types.Network, contentName string, description string) (
+	content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
+	c.ContentName = contentName
 	c.ManagedContract = managedContract
 	c.LocationUrl = locateUrl
 	c.CreatorAddress = GetTxAccAddr().String()
 	c.EncryptionType = encryptionType
 	c.FileExtension = fileExtension
 	c.Network = string(network)
+	c.Description = description
 	tx := DB.Create(c)
 	if tx.Error != nil {
 		return nil, xerrors.Errorf("error when creating a content record: %w", tx.Error)
 	}
 	return c, nil
+}
+
+func (c *Content) UpdateLocationUrl(locationUrl string) error {
+	tx := DB.Model(&Content{}).Where("id = ?", c.ID).Update("location_url", locationUrl)
+	if tx.RowsAffected != 1 || tx.Error != nil {
+		return xerrors.Errorf("error when update a content location_url: %w", tx.Error)
+	}
+	return nil
 }
 
 func (c *Content) UpdateAssetID(ID int64, assetID int64) error {

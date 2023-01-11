@@ -24,8 +24,20 @@ services:
       - '4001:4001/udp'
       - '127.0.0.1:8080:8080'
       - '127.0.0.1:5001:5001'
+  frontend:
+    image: creator-suite-frontend:latest
+    container_name: frontend
+    hostname: frontend
+    depends_on:
+      - postgres
+      - ipfs
+      - server
+    ports:
+      - "80:80"
   server:
     image: creator-suite:latest
+    container_name: creator-suite
+    hostname: backend
     build:
       dockerfile: './Dockerfile'
       context: '.'
@@ -43,5 +55,7 @@ services:
       TX_ACCOUNT: ${TX_ACCOUNT}
       RPC_SERVER_ON_CHAIN: ${RPC_SERVER_ON_CHAIN}
       CHAIN_ID: ${CHAIN_ID}
+    volumes:
+      - ~/storage:/storage
 volumes:
   creator_suite_db: {}
