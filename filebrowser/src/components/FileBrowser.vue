@@ -4,19 +4,39 @@
     <Toolbar></Toolbar>
   </div>
   <div class="filelist">
-    <List></List>
+    <List :refreshed="true"></List>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { useBrowserStore } from '@/stores'
 import Toolbar from './Toolbar.vue'
 import List from './List.vue'
 
-// import { useBrowserStore } from '@/stores'
+export default defineComponent({
+  setup() {
+    const browser = useBrowserStore()
+    const load = async () => {
+      browser.loadPath()
+    }
+    return {
+      load
+    }
+  },
+  async mounted() {
+    await this.load()
+  }
+})
+
 // import { storeToRefs } from 'pinia'
 
 // const browser = useBrowserStore()
 // const { path } = storeToRefs(browser)
+
+
+
+
 </script>
 
 <!-- <script lang="ts">
@@ -60,6 +80,7 @@ export default defineComponent({
   display: flex;
   background-color: white;
 }
+
 .filelist {
   display: flex;
   width: 100%;
