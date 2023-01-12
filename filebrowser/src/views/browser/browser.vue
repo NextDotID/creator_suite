@@ -3,7 +3,7 @@
     <Navigation></Navigation>
   </div>
   <div>
-    <FileBrowser path="storage/"></FileBrowser>
+    <FileBrowser path="/storage"></FileBrowser>
   </div>
   <div class="footer">
     <Footer></Footer>
@@ -26,15 +26,18 @@ import Footer from '@cp/Footer.vue'
   text-align: center;
   color: @color-black;
   margin-top: (@margin * 3);
+
   a {
     color: #42b983;
   }
 }
+
 .header {
   // height: 4%;
   display: flex;
   flex-direction: column;
 }
+
 .footer {
   height: 100%;
   // width: 100%;

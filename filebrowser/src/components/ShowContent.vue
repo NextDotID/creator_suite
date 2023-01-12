@@ -17,7 +17,8 @@
         </v-card-title>
 
         <v-overlay :model-value="isHovering" contained scrim="#036358" class="align-center justify-center">
-          <v-btn variant="flat">Purchase more info</v-btn>
+          <v-btn variant="flat">Purchase <v-icon color="blue">mdi-ethereum</v-icon>{{ payment_token_amount }}
+            for more info</v-btn>
         </v-overlay>
       </v-card>
     </v-hover>
@@ -50,10 +51,10 @@ export default defineComponent({
   mounted() {
     console.log('mounted!')
     var req: ShowContentRequest = {
-      content_id: 29
+      content_id: 38
     }
     http
-      .get('/api/v1/show-content?content_id=29')
+      .get('/api/v1/show-content?content_id=38')
       .then((response: ShowContentResponse) => {
         console.log(response.data)
         this.file_name = response.data.content_name
