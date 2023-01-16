@@ -3,7 +3,7 @@ name: Build frontend container
 on:
   push:
     branches:
-      - "feature/github-action"
+      - "test/**"
     tags:
       - "release-frontend/**"
 
@@ -41,7 +41,9 @@ jobs:
           context: ./filebrowser
           push: true
           file: ./filebrowser/Dockerfile
-          tags: ghcr.io/nextdotid/creator_suite_front:latest
+          tags: |
+            ghcr.io/nextdotid/creator_suite:'${{ github.ref_name}}'
+            ghcr.io/nextdotid/creator_suite:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-frondend-cache
           cache-to: type=local,dest=/tmp/.buildx-frondend-cache-new,mode=max
