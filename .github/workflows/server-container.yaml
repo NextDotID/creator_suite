@@ -2,8 +2,6 @@ name: Build server container
 
 on:
   push:
-    branches:
-      - "feature/github-action"
     tags:
       - "release-server/**"
 

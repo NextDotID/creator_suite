@@ -2,12 +2,14 @@ name: Build frontend container
 
 on:
   push:
+    branches:
+      - "feature/github-action"
     tags:
       - "release-frontend/**"
 
 jobs:
   build-frontend-image:
-    if: (github.ref_name == 'main' || github.ref_name == 'feature/CI') && github.repository == 'nextdotid/creator_suite'
+    if: github.repository == 'nextdotid/creator_suite'
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
@@ -39,7 +41,7 @@ jobs:
           context: './filebrowser'
           push: true
           file: Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/nextdotid/creator_suite_front:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
