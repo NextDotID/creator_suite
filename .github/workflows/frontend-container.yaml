@@ -28,7 +28,7 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: /tmp/.buildx-frondend-cache
           key: ${{ runner.os }}-docker-build-${{ github.sha }}
       - name: Extract metadata
         id: meta
@@ -43,9 +43,9 @@ jobs:
           file: Dockerfile
           tags: ghcr.io/nextdotid/creator_suite_front:latest
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=local,src=/tmp/.buildx-frondend-cache
+          cache-to: type=local,dest=/tmp/.buildx-frondend-cache-new,mode=max
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-frondend-cache
+          mv /tmp/.buildx-frondend-cache-new /tmp/.buildx-frondend-cache
