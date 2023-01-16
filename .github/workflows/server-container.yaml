@@ -41,7 +41,7 @@ jobs:
           context: '.'
           push: true
           file: Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/nextdotid/creator_suite_server:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
