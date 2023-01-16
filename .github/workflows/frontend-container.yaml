@@ -34,6 +34,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Get version
+        env:
+          BRANCH: ${{ github.ref_name }}
+        id: version
+        run: echo "tagname=${BRANCH##*/}" >> $GITHUB_OUTPUT
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
@@ -41,7 +46,7 @@ jobs:
           push: true
           file: ./filebrowser/Dockerfile
           tags: |
-            ghcr.io/nextdotid/creator_suite:'${{ github.ref_name}}'
+            ghcr.io/nextdotid/creator_suite:'${{ steps.version.outputs.tagname}}'
             ghcr.io/nextdotid/creator_suite:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-frondend-cache
