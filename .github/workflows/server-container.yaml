@@ -2,7 +2,7 @@ name: Build server container
 
 on:
   push:
-    branchs:
+    branches:
       - "feature/github-action"
     tags:
       - "release-server/**"
@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-build-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-docker-build-${{ github.sha }}
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v4

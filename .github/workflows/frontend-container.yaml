@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-build-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-docker-build-${{ github.sha }}
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v4
@@ -39,7 +39,7 @@ jobs:
           context: './filebrowser'
           push: true
           file: Dockerfile
-          tags: ${{ github.repository }}_frontend:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
