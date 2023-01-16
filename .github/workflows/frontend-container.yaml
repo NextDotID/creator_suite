@@ -46,7 +46,7 @@ jobs:
           push: true
           file: ./filebrowser/Dockerfile
           tags: |
-            ghcr.io/nextdotid/creator_suite:'${{ steps.version.outputs.tagname}}'
+            ghcr.io/nextdotid/creator_suite:${{ steps.version.outputs.tagname}}
             ghcr.io/nextdotid/creator_suite:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-frondend-cache
