@@ -2,9 +2,8 @@ name: Build frontend container
 
 on:
   push:
-    branches:
-      - "test/**"
     tags:
+      - "test/**"
       - "release-frontend/**"
 
 jobs:
