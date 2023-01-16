@@ -3,7 +3,6 @@ name: Build frontend container
 on:
   push:
     tags:
-      - "test/**"
       - "release-frontend/**"
 
 jobs:
@@ -46,8 +45,8 @@ jobs:
           push: true
           file: ./filebrowser/Dockerfile
           tags: |
-            ghcr.io/nextdotid/creator_suite:${{ steps.version.outputs.tagname}}
-            ghcr.io/nextdotid/creator_suite:latest
+            ghcr.io/nextdotid/creator_suite_frontend:${{ steps.version.outputs.tagname}}
+            ghcr.io/nextdotid/creator_suite_frontend:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-frondend-cache
           cache-to: type=local,dest=/tmp/.buildx-frondend-cache-new,mode=max
