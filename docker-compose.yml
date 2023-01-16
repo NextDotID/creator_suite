@@ -28,6 +28,9 @@ services:
     image: creator-suite-frontend:latest
     container_name: frontend
     hostname: frontend
+    build:
+      dockerfile: './Dockerfile'
+      context: './filebrowser'
     depends_on:
       - postgres
       - ipfs
