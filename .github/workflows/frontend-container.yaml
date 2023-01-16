@@ -38,9 +38,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: './filebrowser'
+          context: ./filebrowser
           push: true
-          file: Dockerfile
+          file: ./filebrowser/Dockerfile
           tags: ghcr.io/nextdotid/creator_suite_front:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-frondend-cache
