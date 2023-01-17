@@ -25,7 +25,7 @@ services:
       - '127.0.0.1:8080:8080'
       - '127.0.0.1:5001:5001'
   frontend:
-    image: creator-suite-frontend:latest
+    image: ghcr.io/nextdotid/creator_suite_frontend:latest
     container_name: frontend
     hostname: frontend
     build:
@@ -38,12 +38,9 @@ services:
     ports:
       - "80:80"
   server:
-    image: creator-suite:latest
-    container_name: creator-suite
+    image: ghcr.io/nextdotid/creator_suite_server:latest
+    container_name: creator-suite-server
     hostname: backend
-    build:
-      dockerfile: './Dockerfile'
-      context: '.'
     links:
       - postgres
     depends_on:
