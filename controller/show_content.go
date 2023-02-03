@@ -45,7 +45,7 @@ func show_content(c *gin.Context) {
 	}
 
 	// TODO: query token_amount from contract
-	assetID, err := model.GetAssetID(content.CreatorAddress, uint64(content.ID))
+	assetID, err := model.GetAssetID(content.ManagedContract, content.CreatorAddress, uint64(content.ID))
 	log.Infof("get assetID: %d", assetID)
 
 	if err != nil {

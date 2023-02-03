@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"net/http"
-	"strconv"
-
+	"fmt"
 	"github.com/nextdotid/creator_suite/types"
+	"github.com/nextdotid/creator_suite/util"
 	log "github.com/sirupsen/logrus"
+	"math/big"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
@@ -17,7 +18,7 @@ type CreateRecordRequest struct {
 	ManagedContract     string        `json:"managed_contract"`
 	Network             types.Network `json:"network"`
 	PaymentTokenAddress string        `json:"payment_token_address"`
-	PaymentTokenAmount  int64         `json:"payment_token_amount"`
+	PaymentTokenAmount  string        `json:"payment_token_amount"`
 	KeyID               int64         `json:"key_id"`
 	ContentName         string        `json:"content_name"`
 	EncryptionType      int8          `json:"encryption_type"`
@@ -32,7 +33,8 @@ type CreateRecordResponse struct {
 func create_record(c *gin.Context) {
 	req := CreateRecordRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
+		fmt.Println(req)
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
 		return
 	}
 	if !req.Network.IsValid() {
@@ -48,6 +50,12 @@ func create_record(c *gin.Context) {
 		}
 	}
 
+	tokenAmount := util.ToWei(req.PaymentTokenAmount, 18)
+	if tokenAmount == big.NewInt(0) {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("token amount invalid"))
+		return
+	}
+
 	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID, req.EncryptionType,
 		req.FileExtension, req.Network, req.ContentName, req.Description)
 	if err != nil {
@@ -55,17 +63,16 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	if req.EncryptionType == model.ENCRYPTION_TYPE_ECC {
-		err = content.UpdateLocationUrl(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), req.ContentName))
-		if err != nil {
-			log.Errorf("update content_url err: %v", err)
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Update error: %v", err))
-			return
-		}
-	}
+	//if req.EncryptionType == model.ENCRYPTION_TYPE_ECC {
+	//	err = content.UpdateLocationUrl(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), req.ContentName))
+	//	if err != nil {
+	//		log.Errorf("update content_url err: %v", err)
+	//		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Update error: %v", err))
+	//		return
+	//	}
+	//}
 
-	// create asset in contract, TODO should be multiple contract options
-	err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, req.PaymentTokenAmount)
+	err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
 	if err != nil {
 		updateErr := content.UpdateToInvalidStatus(content.ID)
 		if updateErr != nil {
