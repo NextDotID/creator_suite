@@ -71,7 +71,7 @@ func get_content(c *gin.Context) {
 	var encrypted_password string
 	if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
 		encrypted_password, err = encrypt.EncryptPasswordByPublicKey(key.Password, req.PublicKey)
-		encrypted_result, err = getContent(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName))
+		encrypted_result, err = getContent(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName+".enc"))
 	} else {
 		encrypted_result, err = encrypt.EncryptContentByPublicKey(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName), req.PublicKey)
 	}
