@@ -14,7 +14,6 @@ import (
 )
 
 type CreateRecordRequest struct {
-	ContentLocateUrl    string        `json:"content_locate_url"`
 	ManagedContract     string        `json:"managed_contract"`
 	Network             types.Network `json:"network"`
 	PaymentTokenAddress string        `json:"payment_token_address"`
@@ -56,21 +55,12 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	content, err := model.CreateRecord(req.ContentLocateUrl, req.ManagedContract, req.KeyID, req.EncryptionType,
+	content, err := model.CreateRecord(req.ManagedContract, req.KeyID, req.EncryptionType,
 		req.FileExtension, req.Network, req.ContentName, req.Description)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
-
-	//if req.EncryptionType == model.ENCRYPTION_TYPE_ECC {
-	//	err = content.UpdateLocationUrl(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), req.ContentName))
-	//	if err != nil {
-	//		log.Errorf("update content_url err: %v", err)
-	//		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Update error: %v", err))
-	//		return
-	//	}
-	//}
 
 	err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
 	if err != nil {
