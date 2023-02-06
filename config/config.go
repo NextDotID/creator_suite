@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
 )
 
@@ -47,16 +46,9 @@ func GetDatabaseDSN() string {
 		Viper.GetString("db.tz"),
 	)
 }
-func GetChainID() string {
-	return os.Getenv("CHAIN_ID")
-}
 
 func GetRPCServer() string {
 	return os.Getenv("RPC_SERVER_ON_CHAIN")
-}
-
-func GetSubscriptionContractAddress() common.Address {
-	return common.HexToAddress(Viper.GetString("chain.subscription_contract_address"))
 }
 
 func GetTxAccConf() string {

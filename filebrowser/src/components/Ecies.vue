@@ -27,7 +27,7 @@
 
       <v-window-item :value="2">
         <v-card-text>
-          <v-select :items="['ethereum', 'goerli', 'polygon', 'mumbai']" label="Network" v-model="network"></v-select>
+          <v-select :items="['mumbai']" label="Network" v-model="network"></v-select>
           <v-text-field label="Managed Contract" v-model="managed_contract"></v-text-field>
           <v-text-field label="Payment Token Address" v-model="payment_token_address"></v-text-field>
           <v-text-field label="Payment Token Amount" v-model="payment_token_amount"></v-text-field>
@@ -90,7 +90,7 @@ export default defineComponent({
     content_id: -1,
     managed_contract: '',
     payment_token_address: '',
-    payment_token_amount: 0,
+    payment_token_amount: '',
     description: '',
     network: '',
     selectedFiles: [],
@@ -139,7 +139,7 @@ export default defineComponent({
         managed_contract: this.managed_contract,
         network: this.network,
         payment_token_address: this.payment_token_address,
-        payment_token_amount: Number(this.payment_token_amount),
+        payment_token_amount: this.payment_token_amount,
         key_id: -1,
         encryption_type: Number(this.type), // ecies
         file_extension: this.extension!,

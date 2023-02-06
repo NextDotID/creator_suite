@@ -3,7 +3,7 @@ export interface CreateContentRequest {
   managed_contract: string
   network: string
   payment_token_address: string
-  payment_token_amount: number
+  payment_token_amount: string
   key_id: number
   content_name: string
   encryption_type: number
@@ -33,6 +33,6 @@ export interface ShowContentResponse {
     asset_id: number
     network: string
     payment_token_address: string
-    payment_token_amount: number
+    payment_token_amount: string
   }
 }

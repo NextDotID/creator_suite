@@ -39,7 +39,7 @@ export default defineComponent({
       file_description: 'default file description',
       file_size: '64KB',
       network: 'unknown',
-      payment_token_amount: 1,
+      payment_token_amount: '1',
       payment_token_address: 'Token Address',
     })
     // var preview_image: Buffer = Buffer.alloc(0)

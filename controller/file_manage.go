@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -153,35 +152,35 @@ func list(c *gin.Context) {
 				}
 			}
 
-			if content, ok := contentMap[contentID]; ok {
-				if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
-					cid := ipfs.ParseCid(content.LocationUrl)
-					ctx, cancel := context.WithCancel(context.Background())
-					defer func() {
-						cancel()
-					}()
-					log.Infof("content_id = %d, cid = %s", content.ID, cid)
-					stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
-					if err != nil {
-						errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
-						return
-					}
-					children = append(children, File{
-						Name:      folder.Name,
-						Type:      "ipfsfile",
-						Size:      formatFileSize(stat.Size),
-						Extension: "ipfs",
-						Path:      content.LocationUrl,
-
-						ContentID:       content.ID,
-						ManagedContract: content.ManagedContract,
-						KeyID:           content.KeyID,
-						LocationUrl:     content.LocationUrl,
-						CreatedTime:     util.Datetime2DateString(content.CreatedAt),
-						UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
-					})
-				}
-			}
+			//if content, ok := contentMap[contentID]; ok {
+			//	if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
+			//		//cid := ipfs.ParseCid(content.LocationUrl)
+			//		//ctx, cancel := context.WithCancel(context.Background())
+			//		//defer func() {
+			//		//	cancel()
+			//		//}()
+			//		//log.Infof("content_id = %d, cid = %s", content.ID, cid)
+			//		//stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
+			//		//if err != nil {
+			//		//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
+			//		//	return
+			//		//}
+			//		children = append(children, File{
+			//			Name:      folder.Name,
+			//			Type:      "ipfsfile",
+			//			Size:      formatFileSize(stat.Size),
+			//			Extension: "ipfs",
+			//			Path:      content.LocationUrl,
+			//
+			//			ContentID:       content.ID,
+			//			ManagedContract: content.ManagedContract,
+			//			KeyID:           content.KeyID,
+			//			LocationUrl:     content.LocationUrl,
+			//			CreatedTime:     util.Datetime2DateString(content.CreatedAt),
+			//			UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
+			//		})
+			//	}
+			//}
 			folder.Files = children
 			folders = append(folders, folder)
 		}

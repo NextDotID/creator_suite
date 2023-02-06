@@ -11,6 +11,7 @@ require (
 	github.com/ipfs/interface-go-ipfs-core v0.7.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.14.0
 	github.com/urfave/cli v1.22.10

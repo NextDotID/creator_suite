@@ -21,7 +21,6 @@ type Content struct {
 	EncryptionType  int8 `gorm:"default:1"`
 	KeyID           int64
 	ContentName     string
-	LocationUrl     string
 	FileExtension   string
 	Status          int8 `gorm:"default:1"`
 	Description     string
@@ -50,14 +49,13 @@ func ListContent() ([]Content, error) {
 	return contents, nil
 }
 
-func CreateRecord(locateUrl string, managedContract string, keyID int64, encryptionType int8,
+func CreateRecord(managedContract string, keyID int64, encryptionType int8,
 	fileExtension string, network types.Network, contentName string, description string) (
 	content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
 	c.ContentName = contentName
 	c.ManagedContract = managedContract
-	c.LocationUrl = locateUrl
 	c.CreatorAddress = GetTxAccAddr().String()
 	c.EncryptionType = encryptionType
 	c.FileExtension = fileExtension
