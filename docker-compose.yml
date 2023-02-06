@@ -12,18 +12,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - creator_suite_db:/var/lib/postgresql/data
-#  ipfs:
-#    image: ipfs/go-ipfs:latest
-#    container_name: ipfs_host
-#    hostname: ipfs_host
-#    volumes:
-#      - ./export:/export
-#      - ./ipfs_data:/data/ipfs
-#    ports:
-#      - '4001:4001'
-#      - '4001:4001/udp'
-#      - '127.0.0.1:8080:8080'
-#      - '127.0.0.1:5001:5001'
   frontend:
     image: ghcr.io/nextdotid/creator_suite_frontend:latest
     container_name: frontend
@@ -33,7 +21,6 @@ services:
       context: './filebrowser'
     depends_on:
       - postgres
-    #  - ipfs
       - server
     ports:
       - "80:80"
@@ -48,7 +35,6 @@ services:
       - postgres
     depends_on:
       - postgres
-    #  - ipfs
     ports:
       - "8000:3000"
     environment:
