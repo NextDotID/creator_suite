@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/nextdotid/creator_suite/types"
 	"github.com/nextdotid/creator_suite/util"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"net/http"
 
@@ -62,15 +61,15 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
-	if err != nil {
-		updateErr := content.UpdateToInvalidStatus(content.ID)
-		if updateErr != nil {
-			log.Errorf("update content record err:%v", updateErr)
-		}
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %v", err))
-		return
-	}
+	//err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
+	//if err != nil {
+	//	updateErr := content.UpdateToInvalidStatus(content.ID)
+	//	if updateErr != nil {
+	//		log.Errorf("update content record err:%v", updateErr)
+	//	}
+	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %v", err))
+	//	return
+	//}
 
 	c.JSON(http.StatusOK, CreateRecordResponse{
 		ContentID: content.ID,

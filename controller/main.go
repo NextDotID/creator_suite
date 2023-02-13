@@ -39,6 +39,7 @@ func Init() {
 	})
 
 	Engine.POST("/api/v1/create", create_record)
+	Engine.POST("/api/v1/update", update_record)
 	Engine.GET("/api/v1/get-content", get_content)
 	Engine.GET("/api/v1/show-content", show_content)
 
