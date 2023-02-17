@@ -2,6 +2,8 @@ name: Build frontend container
 
 on:
   push:
+    feature:
+      - "feature/dockerfile"
     tags:
       - "release-frontend/**"
 
