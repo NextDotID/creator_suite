@@ -76,7 +76,7 @@ func (c *Content) UpdateLocationUrl(locationUrl string) error {
 	return nil
 }
 
-func (c *Content) UpdateAssetID(ID int64, assetID int64) error {
+func UpdateAssetID(ID int64, assetID int64) error {
 	tx := DB.Model(&Content{}).Where("id = ?", ID).Update("asset_id", assetID)
 	if tx.RowsAffected != 1 || tx.Error != nil {
 		return xerrors.Errorf("error when update a content asset_id record: %w", tx.Error)
