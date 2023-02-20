@@ -47,7 +47,7 @@ The other one is Content， which is the record of content assets
 |                  |                |             |
 
 ## frontend
-frontend mains in a different repo
+frontend maintains in the repo:
 [frontend repo](https://github.com/NextDotID/creator_suite_fronted)
 
 
