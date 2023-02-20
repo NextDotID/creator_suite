@@ -1,6 +1,11 @@
 # CreatorSuite
 CreatorSuite is designed to be a useful tool in Core Service to help content creator to distribute their content.
 
+## Quick Start
+```shell
+cp .env.example .env
+docker-compose up 
+```
 ## CreatorSuite Service
 
 ### CreatorSuite Service API
@@ -40,6 +45,11 @@ The other one is Content， which is the record of content assets
 | created_at       | datetime       |             |
 | updated_at       | datetime       |             | 
 |                  |                |             |
+
+## frontend
+frontend mains in a different repo
+[frontend repo](https://github.com/NextDotID/creator_suite_fronted)
+
 
 ## Cryptool
 Since the whole solution in CreatorSuite depends on cryptography, we also provide a command-line applications, 
