@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/nextdotid/creator_suite/types"
 	"github.com/nextdotid/creator_suite/util"
 	"math/big"
@@ -31,7 +30,7 @@ type CreateRecordResponse struct {
 func create_record(c *gin.Context) {
 	req := CreateRecordRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		fmt.Println(req)
+		//fmt.Println(req)
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
 		return
 	}

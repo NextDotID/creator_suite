@@ -12,13 +12,13 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - creator_suite_db:/var/lib/postgresql/data
-  frontend:
-    image: ghcr.io/nextdotid/creator_suite_frontend_v2:latest
-    container_name: creator-suite-frontend
-    ports:
-      - "3001:3000"
-    environment:
-      NODE_ENV: development
+#  frontend:
+#    image: ghcr.io/nextdotid/creator_suite_frontend_v2:latest
+#    container_name: creator-suite-frontend
+#    ports:
+#      - "3001:3000"
+#    environment:
+#      NODE_ENV: development
   server:
     image: ghcr.io/nextdotid/creator_suite_server:latest
     container_name: creator-suite-server
