@@ -71,26 +71,25 @@ List the contents
         {
             "folders": [
                 {
-                    "name": "22",
-                    "type": "dirs",
-                    "path": "/storage/22",
-                    "created_time": "2023-02-02 06:25:16",
-                    "update_time": "2023-02-02 06:25:16",
-                    "content_id": 22,
-                    "children": [
+                    "name": "22", // folder name
+                    "type": "dirs", // type=dirs | localfile
+                    "path": "/storage/22", // abs path
+                    "created_time": "2023-02-02 06:25:16", // string
+                    "update_time": "2023-02-02 06:25:16",  // string
+                    "content_id": 22, // integer
+                    "children": [  // list of files under this folder
                         {
-                            "name": "result.jpeg",
-                            "type": "localfile",
-                            "size": "56.46KB",
-                            "extension": "jpeg",
-                            "path": "/storage/22/result.jpeg",
-                            "content_id": 0,
-                            "managed_contract": "",
-                            "asset_id": 0,
-                            "key_id": 0,
-                            "location_url": "",
-                            "created_time": "2023-02-02 06:25:16",
-                            "update_time": "2023-02-02 06:25:16"
+                            "name": "result.jpeg", // filename
+                            "type": "localfile",   // type=dirs | localfile
+                            "size": "56.46KB",     // size has been formatted as string 
+                            "extension": "jpeg",   // extension for icon display
+                            "path": "/storage/22/result.jpeg", // abs path
+                            "content_id": 0,        // content_id (postgres table)
+                            "managed_contract": "", // contract
+                            "asset_id": 0,          // asset_id (in contract)
+                            "key_id": 0,            // key_id (password record id)
+                            "created_time": "2023-02-02 06:25:16", // string
+                            "update_time": "2023-02-02 06:25:16"   // string
                         }
                     ]
                 }
@@ -106,7 +105,6 @@ List the contents
                     "managed_contract": "",
                     "asset_id": 0,
                     "key_id": 0,
-                    "location_url": "",
                     "created_time": "2023-02-02 06:22:56",
                     "update_time": "2023-02-02 06:22:56"
                 }
