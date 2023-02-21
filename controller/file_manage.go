@@ -15,7 +15,6 @@ import (
 	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/dare"
 	"github.com/nextdotid/creator_suite/util/encrypt"
-	"github.com/nextdotid/creator_suite/util/ipfs"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
@@ -47,8 +46,8 @@ type File struct {
 }
 
 type ListRequest struct {
-	Path string          `json:"path"` // /storage/
-	Cfg  ipfs.IpfsConfig `json:"cfg"`
+	Path string `json:"path"` // /storage/
+	//Cfg  ipfs.IpfsConfig `json:"cfg"`
 }
 
 type ListResponse struct {

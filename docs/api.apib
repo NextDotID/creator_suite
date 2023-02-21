@@ -56,4 +56,59 @@ After paying for a specific content asset, the buyer can call the get-content ap
             "file_extension": "jpg"
         }
 
+## Get file list of contents [/file/list]
+### get the list of the contents that created already [post]
 
+List the contents
+
++ Attributes (object)
+    + path (string, required) - the storage path of the content
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "folders": [
+                {
+                    "name": "22",
+                    "type": "dirs",
+                    "path": "/storage/22",
+                    "created_time": "2023-02-02 06:25:16",
+                    "update_time": "2023-02-02 06:25:16",
+                    "content_id": 22,
+                    "children": [
+                        {
+                            "name": "result.jpeg",
+                            "type": "localfile",
+                            "size": "56.46KB",
+                            "extension": "jpeg",
+                            "path": "/storage/22/result.jpeg",
+                            "content_id": 0,
+                            "managed_contract": "",
+                            "asset_id": 0,
+                            "key_id": 0,
+                            "location_url": "",
+                            "created_time": "2023-02-02 06:25:16",
+                            "update_time": "2023-02-02 06:25:16"
+                        }
+                    ]
+                }
+            ],
+            "files": [
+                {
+                    "name": "result.jpeg",
+                    "type": "localfile",
+                    "size": "56.46KB",
+                    "extension": "jpeg",
+                    "path": "/storage/result.jpeg",
+                    "content_id": 0,
+                    "managed_contract": "",
+                    "asset_id": 0,
+                    "key_id": 0,
+                    "location_url": "",
+                    "created_time": "2023-02-02 06:22:56",
+                    "update_time": "2023-02-02 06:22:56"
+                }
+            ]
+        }
