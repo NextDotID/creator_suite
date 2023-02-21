@@ -9,15 +9,24 @@ CreatorSuite Service provides create and get api to distribute content asset for
 
 ### Create a Content Asset [post]
 
+ + Attributes (object)
+    + managed_contract (string, required) - the contract that received the tokens
+    + network (string, required) - interact network.
+    + payment_token_address (string, required) - which token and how much it cost to unlock the content
+    + payment_token_amount (string, required) - same as above
+    + encryption_type (string, required) - encryption_type=1 symmetric encryption option, encryption_type=2 asymmetric encryption
+    + password (string, optional) - depends on encryption_type. If encryption_type=1, use it encryption/decryption the content; if encryption_type=2, keep it empty.
+    + file_extension (string, required) - record the file extension for decryption process
+    + description (string, optional) - description of the content
+
 + Request (application/json)
 
         {
-            "content_locate_url": "",
-            "managed_contract": "",
-            "network":"",
-            "payment_token_address": "",
-            "payment_token_amount": ,
-            "key_id": 1,
+            "managed_contract": "0x3A6c014579583c5D412A9F3914a67C0885dB90c0",
+            "network":"mumbai",
+            "payment_token_address": "0x9801ca34B280b60292692E3fD00599f0Fbb8d6b2",
+            "payment_token_amount": "5" ,
+            "password": "1234567890qwertq",
             "encryption_type":1,
             "file_extension":"jpg"
         }
@@ -41,11 +50,63 @@ After paying for a specific content asset, the buyer can call the get-content ap
     + Body
 
         {
-            "encrypted_result": "0x04c4557e6612db47e5aced68e172c0ea06bdb92c6d81022acb2b893f1830f980dd1b68dfa97c410cf2d0ed69ffb50190cb2f76a52c6ffa9211e5a389b0b373a891fca5e84905201348e9ff47485b259e37ade9668fb1a018b5979b4a3736d50483428fe391af061b5239d1cb03dc5a23cb9e9781943affbe3efddf46952accbf1d0a16",
-            "location_url": "QmX4RZShLTK7FPusDmh3b2UV7BQVQ8WsyPwX4ZEkDwMJef",
-            "encryption_type": 1, //encryption_type=1, use AEAD to encryption/decryption the content, encrypted_result is the encrypted password for the decrypted content in the IPFS. When the type=2, the encrypted_result is the original content that encrypted by
-      the buyers own publicKey
+            "encrypted_password": "",
+            "encrypted_result": "",
+            "encryption_type": 1, //encryption_type=1 symmetric encryption option, encryption_type=2 asymmetric encryption
             "file_extension": "jpg"
         }
 
+## Get file list of contents [/file/list]
+### get the list of the contents that created already [post]
 
+List the contents
+
++ Attributes (object)
+    + path (string, required) - the storage path of the content
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "folders": [
+                {
+                    "name": "22", // folder name
+                    "type": "dirs", // type=dirs | localfile
+                    "path": "/storage/22", // abs path
+                    "created_time": "2023-02-02 06:25:16", // string
+                    "update_time": "2023-02-02 06:25:16",  // string
+                    "content_id": 22, // integer
+                    "children": [  // list of files under this folder
+                        {
+                            "name": "result.jpeg", // filename
+                            "type": "localfile",   // type=dirs | localfile
+                            "size": "56.46KB",     // size has been formatted as string 
+                            "extension": "jpeg",   // extension for icon display
+                            "path": "/storage/22/result.jpeg", // abs path
+                            "content_id": 0,        // content_id (postgres table)
+                            "managed_contract": "", // contract
+                            "asset_id": 0,          // asset_id (in contract)
+                            "key_id": 0,            // key_id (password record id)
+                            "created_time": "2023-02-02 06:25:16", // string
+                            "update_time": "2023-02-02 06:25:16"   // string
+                        }
+                    ]
+                }
+            ],
+            "files": [
+                {
+                    "name": "result.jpeg",
+                    "type": "localfile",
+                    "size": "56.46KB",
+                    "extension": "jpeg",
+                    "path": "/storage/result.jpeg",
+                    "content_id": 0,
+                    "managed_contract": "",
+                    "asset_id": 0,
+                    "key_id": 0,
+                    "created_time": "2023-02-02 06:22:56",
+                    "update_time": "2023-02-02 06:22:56"
+                }
+            ]
+        }
