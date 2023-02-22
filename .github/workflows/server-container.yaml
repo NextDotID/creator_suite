@@ -53,6 +53,8 @@ jobs:
           tags: |
             ghcr.io/nextdotid/creator_suite_server:${{ steps.version.outputs.tagname}}
             ghcr.io/nextdotid/creator_suite_server:latest
+            docker.io/nextdotid/creator_suite_server:${{ steps.version.outputs.tagname}}
+            docker.io/nextdotid/creator_suite_server:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
