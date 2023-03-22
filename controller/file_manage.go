@@ -26,33 +26,26 @@ type Folder struct {
 	CreatedTime string `json:"created_time"`
 	UpdateTime  string `json:"update_time"`
 	ContentID   int64  `json:"content_id"`
-	Files       []File `json:"children"`
+	Files       []File `json:"files"`
 }
 
 type File struct {
-	Name      string `json:"name"`
-	Type      string `json:"type"`
-	Size      string `json:"size"`
-	Extension string `json:"extension"`
-	Path      string `json:"path"`
-
-	ContentID       int64  `json:"content_id"`
+	Name            string `json:"name"`
+	Size            string `json:"size"`
+	Extension       string `json:"extension"`
+	Path            string `json:"path"`
 	ManagedContract string `json:"managed_contract"`
+	ContentName     string `json:"content_name"`
+	Description     string `json:"description"`
+	CreatorAddress  string `json:"creator_address"`
 	AssetID         int64  `json:"asset_id"`
 	KeyID           int64  `json:"key_id"`
-	LocationUrl     string `json:"location_url"`
 	CreatedTime     string `json:"created_time"`
 	UpdateTime      string `json:"update_time"`
 }
 
-type ListRequest struct {
-	Path string `json:"path"` // /storage/
-	//Cfg  ipfs.IpfsConfig `json:"cfg"`
-}
-
 type ListResponse struct {
 	Folders []Folder `json:"folders"`
-	Files   []File   `json:"files"`
 }
 
 func formatFileSize(fileSize int64) (size string) {
@@ -89,14 +82,8 @@ func pathJoin(basePath string, elem ...string) string {
 }
 
 func list(c *gin.Context) {
-	req := ListRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
-		return
-	}
-
+	const FILE_PATH = "/storage"
 	folders := make([]Folder, 0)
-	files := make([]File, 0)
 
 	// list content table
 	contents, err := model.ListContent()
@@ -109,9 +96,7 @@ func list(c *gin.Context) {
 		contentMap[c.ID] = c
 	}
 
-	// list volumes: STORAGE
-	log.Infof("list storage volumes: %s", req.Path)
-	list, err := ioutil.ReadDir(req.Path)
+	list, err := ioutil.ReadDir(FILE_PATH)
 	if err != nil {
 		log.Infof("I/O error: %v", err)
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
@@ -123,15 +108,18 @@ func list(c *gin.Context) {
 			if err != nil {
 				continue
 			}
+			content, err := model.FindContentByID(contentID)
+			if err != nil {
+				continue
+			}
 			folder := Folder{
 				Name:        item.Name(),
-				Type:        "dirs",
-				Path:        pathJoin(req.Path, item.Name()),
+				Path:        pathJoin(FILE_PATH, item.Name()),
 				ContentID:   contentID,
 				CreatedTime: util.Datetime2DateString(item.ModTime()),
 				UpdateTime:  util.Datetime2DateString(item.ModTime()),
 			}
-			children := make([]File, 0)
+			files := make([]File, 0)
 			f, err := ioutil.ReadDir(folder.Path)
 			if err != nil {
 				errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
@@ -139,74 +127,29 @@ func list(c *gin.Context) {
 			}
 			for _, item := range f {
 				if !item.IsDir() {
-					children = append(children, File{
-						Name:        item.Name(),
-						Type:        "localfile",
-						Size:        formatFileSize(item.Size()),
-						Extension:   Ext(item.Name()),
-						Path:        filepath.Join(folder.Path, item.Name()),
-						CreatedTime: util.Datetime2DateString(item.ModTime()),
-						UpdateTime:  util.Datetime2DateString(item.ModTime()),
+					files = append(files, File{
+						Name: item.Name(),
+						//Type:        "localfile",
+						Size:            formatFileSize(item.Size()),
+						Extension:       content.FileExtension,
+						ManagedContract: content.ManagedContract,
+						CreatorAddress:  content.CreatorAddress,
+						ContentName:     content.ContentName,
+						Description:     content.Description,
+						KeyID:           content.KeyID,
+						Path:            filepath.Join(folder.Path, item.Name()),
+						CreatedTime:     util.Datetime2DateString(item.ModTime()),
+						UpdateTime:      util.Datetime2DateString(item.ModTime()),
 					})
 				}
 			}
-
-			//if content, ok := contentMap[contentID]; ok {
-			//	if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
-			//		//cid := ipfs.ParseCid(content.LocationUrl)
-			//		//ctx, cancel := context.WithCancel(context.Background())
-			//		//defer func() {
-			//		//	cancel()
-			//		//}()
-			//		//log.Infof("content_id = %d, cid = %s", content.ID, cid)
-			//		//stat, err := ipfs.Stat(ctx, &req.Cfg, cid)
-			//		//if err != nil {
-			//		//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in IPFS: %w", err))
-			//		//	return
-			//		//}
-			//		children = append(children, File{
-			//			Name:      folder.Name,
-			//			Type:      "ipfsfile",
-			//			Size:      formatFileSize(stat.Size),
-			//			Extension: "ipfs",
-			//			Path:      content.LocationUrl,
-			//
-			//			ContentID:       content.ID,
-			//			ManagedContract: content.ManagedContract,
-			//			KeyID:           content.KeyID,
-			//			LocationUrl:     content.LocationUrl,
-			//			CreatedTime:     util.Datetime2DateString(content.CreatedAt),
-			//			UpdateTime:      util.Datetime2DateString(content.UpdatedAt),
-			//		})
-			//	}
-			//}
-			folder.Files = children
+			folder.Files = files
 			folders = append(folders, folder)
 		}
 	}
 
-	// list host mount path
-	list2, err := ioutil.ReadDir(req.Path)
-	if err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("I/O error"))
-		return
-	}
-	for _, item := range list2 {
-		if !item.IsDir() {
-			files = append(files, File{
-				Name:        item.Name(),
-				Type:        "localfile",
-				Size:        formatFileSize(item.Size()),
-				Extension:   Ext(item.Name()),
-				Path:        pathJoin(req.Path, item.Name()),
-				CreatedTime: util.Datetime2DateString(item.ModTime()),
-				UpdateTime:  util.Datetime2DateString(item.ModTime()),
-			})
-		}
-	}
 	c.JSON(http.StatusOK, ListResponse{
 		Folders: folders,
-		Files:   files,
 	})
 }
 

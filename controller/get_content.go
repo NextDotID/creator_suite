@@ -33,7 +33,7 @@ type GetContentResponse struct {
 func get_content(c *gin.Context) {
 	req := GetContentRequest{}
 	req.PublicKey = c.Query("public_key")
-	req.ContentID, _ = strconv.ParseInt(c.Query("content_id"), 0, 64)
+	req.ContentID, _ = strconv.ParseInt(c.Query("content_id"), 10, 64)
 
 	pub_key, err := util.StringToPublicKey(req.PublicKey)
 	if err != nil {

@@ -4,11 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/types"
-	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/dare"
 	"github.com/nextdotid/creator_suite/util/encrypt"
 	"golang.org/x/xerrors"
-	"math/big"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,16 +15,14 @@ import (
 )
 
 type CreateRecordRequest struct {
-	ManagedContract     string        `json:"managed_contract"`
-	Network             types.Network `json:"network"`
-	PaymentTokenAddress string        `json:"payment_token_address"`
-	PaymentTokenAmount  string        `json:"payment_token_amount"`
-	Password            string        `json:"password"`
-	ContentName         string        `json:"content_name"`
-	EncryptionType      int8          `json:"encryption_type"`
-	FileExtension       string        `json:"file_extension"`
-	Description         string        `json:"description"`
-	CreatorAddress      string        `json:"creator_address"`
+	ManagedContract string        `json:"managed_contract"`
+	Network         types.Network `json:"network"`
+	Password        string        `json:"password"`
+	ContentName     string        `json:"content_name"`
+	EncryptionType  int8          `json:"encryption_type"`
+	FileExtension   string        `json:"file_extension"`
+	Description     string        `json:"description"`
+	CreatorAddress  string        `json:"creator_address"`
 }
 
 type CreateRecordResponse struct {
@@ -41,8 +37,6 @@ func create_record(c *gin.Context) {
 		return
 	}
 	req.ManagedContract = c.PostForm("managed_contract")
-	req.PaymentTokenAddress = c.PostForm("payment_token_address")
-	req.PaymentTokenAmount = c.PostForm("payment_token_amount")
 	req.Password = c.PostForm("password")
 	req.ContentName = c.PostForm("content_name")
 	et, _ := strconv.ParseInt(c.PostForm("encryption_type"), 10, 64)
@@ -50,7 +44,6 @@ func create_record(c *gin.Context) {
 	req.Description = c.PostForm("description")
 	req.CreatorAddress = c.PostForm("creator_address")
 
-	// Source
 	file, err := c.FormFile("file")
 	if err != nil {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("get file error", err))
@@ -70,13 +63,6 @@ func create_record(c *gin.Context) {
 			return
 		}
 	}
-
-	tokenAmount := util.ToWei(req.PaymentTokenAmount, 18)
-	if tokenAmount == big.NewInt(0) {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("token amount invalid"))
-		return
-	}
-
 	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
 		fileExtension, req.Network, req.ContentName, req.Description, req.CreatorAddress)
 	if err != nil {
