@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://xxx
+HOST: https://xxx.coreservice.com/create_suite
 
 # CreatorSuite
 
@@ -9,15 +9,17 @@ CreatorSuite Service provides create and get api to distribute content asset for
 
 ### Create a Content Asset [post]
 
- + Attributes (object)
+ + Attributes (body/form-data)
     + managed_contract (string, required) - the contract that received the tokens
     + network (string, required) - interact network.
     + payment_token_address (string, required) - which token and how much it cost to unlock the content
-    + payment_token_amount (string, required) - same as above
+    + payment_token_amount (string, required) - same as above. support 1, 10, 1.5 as input
     + encryption_type (string, required) - encryption_type=1 symmetric encryption option, encryption_type=2 asymmetric encryption
     + password (string, optional) - depends on encryption_type. If encryption_type=1, use it encryption/decryption the content; if encryption_type=2, keep it empty.
-    + file_extension (string, required) - record the file extension for decryption process
+    + content_name (string, optional) - name of the content
     + description (string, optional) - description of the content
+    + creator_address(string, required) - creator's wallet address
+    + file (file, required) - the original file to list
 
 + Request (application/json)
 
@@ -28,7 +30,10 @@ CreatorSuite Service provides create and get api to distribute content asset for
             "payment_token_amount": "5" ,
             "password": "1234567890qwertq",
             "encryption_type":1,
-            "file_extension":"jpg"
+            "content_name": "my first content"
+            "description" : "it's about ..."
+            "creator_address": "0x..."
+            "file": XXX
         }
 
 
