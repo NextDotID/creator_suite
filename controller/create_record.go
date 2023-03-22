@@ -1,14 +1,16 @@
 package controller
 
 import (
-	"github.com/nextdotid/creator_suite/types"
-	"github.com/nextdotid/creator_suite/util"
-	"math/big"
-	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
+	"github.com/nextdotid/creator_suite/types"
+	"github.com/nextdotid/creator_suite/util"
 	"golang.org/x/xerrors"
+	"math/big"
+	"net/http"
+	"path/filepath"
+	"strconv"
 )
 
 type CreateRecordRequest struct {
@@ -29,16 +31,35 @@ type CreateRecordResponse struct {
 
 func create_record(c *gin.Context) {
 	req := CreateRecordRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		//fmt.Println(req)
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
-		return
-	}
+	fmt.Println(c.PostForm("network"))
+	req.Network = types.Network(c.PostForm("network"))
 	if !req.Network.IsValid() {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Cannot support the network right now"))
 		return
 	}
+	req.ManagedContract = c.PostForm("managed_contract")
+	req.PaymentTokenAddress = c.PostForm("payment_token_address")
+	req.PaymentTokenAmount = c.PostForm("payment_token_amount")
+	req.Password = c.PostForm("password")
+	req.ContentName = c.PostForm("content_name")
+	et, _ := strconv.ParseInt(c.PostForm("encryption_type"), 10, 64)
+	req.EncryptionType = int8(et)
+	req.Description = c.PostForm("description")
 
+	// Source
+	file, err := c.FormFile("file")
+	if err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("get file error", err))
+		return
+	}
+
+	filename := "/storage/" + file.Filename
+	fmt.Printf("filename: %s", filename)
+	if err = c.SaveUploadedFile(file, filename); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to upload the file", err))
+		return
+	}
+	fileExtension := filepath.Ext(filename)
 	var keyID int64
 	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
 		record := &model.KeyRecord{
@@ -59,7 +80,7 @@ func create_record(c *gin.Context) {
 	}
 
 	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
-		req.FileExtension, req.Network, req.ContentName, req.Description)
+		fileExtension, req.Network, req.ContentName, req.Description)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
