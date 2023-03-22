@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/types"
@@ -11,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type CreateRecordRequest struct {
@@ -31,7 +31,6 @@ type CreateRecordResponse struct {
 
 func create_record(c *gin.Context) {
 	req := CreateRecordRequest{}
-	fmt.Println(c.PostForm("network"))
 	req.Network = types.Network(c.PostForm("network"))
 	if !req.Network.IsValid() {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Cannot support the network right now"))
@@ -54,12 +53,11 @@ func create_record(c *gin.Context) {
 	}
 
 	filename := "/storage/" + file.Filename
-	fmt.Printf("filename: %s", filename)
 	if err = c.SaveUploadedFile(file, filename); err != nil {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to upload the file", err))
 		return
 	}
-	fileExtension := filepath.Ext(filename)
+	fileExtension := strings.Trim(filepath.Ext(filename), ".")
 	var keyID int64
 	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
 		record := &model.KeyRecord{
