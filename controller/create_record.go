@@ -5,9 +5,12 @@ import (
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/types"
 	"github.com/nextdotid/creator_suite/util"
+	"github.com/nextdotid/creator_suite/util/dare"
+	"github.com/nextdotid/creator_suite/util/encrypt"
 	"golang.org/x/xerrors"
 	"math/big"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -23,6 +26,7 @@ type CreateRecordRequest struct {
 	EncryptionType      int8          `json:"encryption_type"`
 	FileExtension       string        `json:"file_extension"`
 	Description         string        `json:"description"`
+	CreatorAddress      string        `json:"creator_address"`
 }
 
 type CreateRecordResponse struct {
@@ -44,6 +48,7 @@ func create_record(c *gin.Context) {
 	et, _ := strconv.ParseInt(c.PostForm("encryption_type"), 10, 64)
 	req.EncryptionType = int8(et)
 	req.Description = c.PostForm("description")
+	req.CreatorAddress = c.PostForm("creator_address")
 
 	// Source
 	file, err := c.FormFile("file")
@@ -51,13 +56,8 @@ func create_record(c *gin.Context) {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("get file error", err))
 		return
 	}
+	fileExtension := strings.Trim(filepath.Ext(file.Filename), ".")
 
-	filename := "/storage/" + file.Filename
-	if err = c.SaveUploadedFile(file, filename); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to upload the file", err))
-		return
-	}
-	fileExtension := strings.Trim(filepath.Ext(filename), ".")
 	var keyID int64
 	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
 		record := &model.KeyRecord{
@@ -78,21 +78,38 @@ func create_record(c *gin.Context) {
 	}
 
 	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
-		fileExtension, req.Network, req.ContentName, req.Description)
+		fileExtension, req.Network, req.ContentName, req.Description, req.CreatorAddress)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
 
-	//err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
-	//if err != nil {
-	//	updateErr := content.UpdateToInvalidStatus(content.ID)
-	//	if updateErr != nil {
-	//		log.Errorf("update content record err:%v", updateErr)
-	//	}
-	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %v", err))
-	//	return
-	//}
+	filePath := "/storage/" + strconv.FormatInt(content.ID, 10) + "/" + file.Filename
+	if err = os.Mkdir("/storage/"+strconv.FormatInt(content.ID, 10), os.ModePerm); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to create new folder, err: %w", err))
+		return
+	}
+	if err = c.SaveUploadedFile(file, filePath); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to upload the file, err:%w", err))
+		return
+	}
+
+	// generate encrypted file
+	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
+		src, _ := os.Open(filePath)
+		dst, _ := os.Create(filePath + ".enc")
+		key, err := encrypt.DeriveKey([]byte(req.Password), src, dst)
+		if err != nil {
+			errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to DeriveKey to encrypt", err))
+			return
+		}
+		cfg := dare.Config{Key: key}
+		_, err = encrypt.AesEncrypt(src, dst, cfg)
+		if err != nil {
+			errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to encrypt the file", err))
+			return
+		}
+	}
 
 	c.JSON(http.StatusOK, CreateRecordResponse{
 		ContentID: content.ID,

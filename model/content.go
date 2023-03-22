@@ -50,13 +50,13 @@ func ListContent() ([]Content, error) {
 }
 
 func CreateRecord(managedContract string, keyID int64, encryptionType int8,
-	fileExtension string, network types.Network, contentName string, description string) (
+	fileExtension string, network types.Network, contentName string, description string, creator string) (
 	content *Content, err error) {
 	c := &Content{}
 	c.KeyID = keyID
 	c.ContentName = contentName
 	c.ManagedContract = managedContract
-	c.CreatorAddress = GetTxAccAddr().String()
+	c.CreatorAddress = creator
 	c.EncryptionType = encryptionType
 	c.FileExtension = fileExtension
 	c.Network = string(network)
