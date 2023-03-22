@@ -16,7 +16,7 @@ type CreateRecordRequest struct {
 	Network             types.Network `json:"network"`
 	PaymentTokenAddress string        `json:"payment_token_address"`
 	PaymentTokenAmount  string        `json:"payment_token_amount"`
-	KeyID               int64         `json:"key_id"`
+	Password            string        `json:"password"`
 	ContentName         string        `json:"content_name"`
 	EncryptionType      int8          `json:"encryption_type"`
 	FileExtension       string        `json:"file_extension"`
@@ -39,10 +39,15 @@ func create_record(c *gin.Context) {
 		return
 	}
 
+	var keyID int64
 	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
-		kr, err := model.FindKeyRecordByID(req.KeyID)
-		if err != nil || kr == nil {
-			errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error, cannot find encryption key"))
+		record := &model.KeyRecord{
+			Password: req.Password,
+		}
+		var err error
+		keyID, err = record.CreateRecord()
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 			return
 		}
 	}
@@ -53,7 +58,7 @@ func create_record(c *gin.Context) {
 		return
 	}
 
-	content, err := model.CreateRecord(req.ManagedContract, req.KeyID, req.EncryptionType,
+	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
 		req.FileExtension, req.Network, req.ContentName, req.Description)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
