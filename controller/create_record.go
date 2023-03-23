@@ -18,7 +18,6 @@ type CreateRecordRequest struct {
 	ManagedContract string        `json:"managed_contract"`
 	Network         types.Network `json:"network"`
 	Password        string        `json:"password"`
-	ContentName     string        `json:"content_name"`
 	EncryptionType  int8          `json:"encryption_type"`
 	FileExtension   string        `json:"file_extension"`
 	Description     string        `json:"description"`
@@ -38,7 +37,6 @@ func create_record(c *gin.Context) {
 	}
 	req.ManagedContract = c.PostForm("managed_contract")
 	req.Password = c.PostForm("password")
-	req.ContentName = c.PostForm("content_name")
 	et, _ := strconv.ParseInt(c.PostForm("encryption_type"), 10, 64)
 	req.EncryptionType = int8(et)
 	req.Description = c.PostForm("description")
@@ -63,8 +61,9 @@ func create_record(c *gin.Context) {
 			return
 		}
 	}
+
 	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
-		fileExtension, req.Network, req.ContentName, req.Description, req.CreatorAddress)
+		fileExtension, req.Network, file.Filename, req.Description, req.CreatorAddress)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return

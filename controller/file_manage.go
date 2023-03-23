@@ -2,10 +2,8 @@ package controller
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -13,15 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
 	"github.com/nextdotid/creator_suite/util"
-	"github.com/nextdotid/creator_suite/util/dare"
-	"github.com/nextdotid/creator_suite/util/encrypt"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
 type Folder struct {
 	Name        string `json:"name"`
-	Type        string `json:"type"`
 	Path        string `json:"path"`
 	CreatedTime string `json:"created_time"`
 	UpdateTime  string `json:"update_time"`
@@ -38,7 +33,6 @@ type File struct {
 	ContentName     string `json:"content_name"`
 	Description     string `json:"description"`
 	CreatorAddress  string `json:"creator_address"`
-	AssetID         int64  `json:"asset_id"`
 	KeyID           int64  `json:"key_id"`
 	CreatedTime     string `json:"created_time"`
 	UpdateTime      string `json:"update_time"`
@@ -106,10 +100,12 @@ func list(c *gin.Context) {
 		if item.IsDir() {
 			contentID, err := strconv.ParseInt(item.Name(), 10, 32)
 			if err != nil {
+				log.Warnf("invalid contentID: %d err: %v", contentID, err)
 				continue
 			}
-			content, err := model.FindContentByID(contentID)
-			if err != nil {
+			content := contentMap[contentID]
+			if &content == nil {
+				log.Warnf("fail to get content info, contentID: %d", contentID)
 				continue
 			}
 			folder := Folder{
@@ -128,8 +124,7 @@ func list(c *gin.Context) {
 			for _, item := range f {
 				if !item.IsDir() {
 					files = append(files, File{
-						Name: item.Name(),
-						//Type:        "localfile",
+						Name:            item.Name(),
 						Size:            formatFileSize(item.Size()),
 						Extension:       content.FileExtension,
 						ManagedContract: content.ManagedContract,
@@ -151,190 +146,4 @@ func list(c *gin.Context) {
 	c.JSON(http.StatusOK, ListResponse{
 		Folders: folders,
 	})
-}
-
-type CreateRequest struct {
-	EncryptType int    `json:"encrypt_type"`
-	Key         string `json:"key"`
-	OriginFile  string `json:"origin_file"`
-	EncryptFile string `json:"encrypt_file"`
-}
-
-type CreateResponse struct {
-	KeyID       int64  `json:"key_id"`
-	EncryptFile string `json:"encrypt_file"`
-}
-
-func create(c *gin.Context) {
-	req := CreateRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
-		return
-	}
-	input := req.OriginFile
-	output := req.EncryptFile
-	if req.EncryptFile == "" {
-		output = fmt.Sprintf("%s.enc", input)
-	}
-	if req.EncryptType == model.ENCRYPTION_TYPE_AES {
-		if input == "" || output == "" {
-			fmt.Fprintf(os.Stderr, "\033[1;31;40m invalid file path")
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
-			return
-		}
-		if req.Key == "" || len(req.Key) < 16 {
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid aes key"))
-			return
-		}
-		in, err := os.Open(input)
-		if err != nil {
-			errorResp(c,
-				http.StatusInternalServerError,
-				xerrors.Errorf("I/O Error: failed to open '%s': %v", input, err))
-			return
-		}
-		out, err := os.Create(output)
-		if err != nil {
-			errorResp(c,
-				http.StatusInternalServerError,
-				xerrors.Errorf("I/O Error: failed to create '%s': %v", output, err))
-			return
-		}
-		key, err := encrypt.DeriveKey([]byte(req.Key), in, out)
-		if err != nil {
-			out.Close()
-			os.Remove(out.Name())
-			errorResp(c,
-				http.StatusInternalServerError,
-				xerrors.Errorf("DeriveKey err: %v", err))
-			return
-		}
-		record := &model.KeyRecord{
-			Password: req.Key,
-		}
-		keyID, err := record.CreateRecord()
-		if err != nil {
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
-			return
-		}
-		log.Infof("Password saved. [key id is %d ]", keyID)
-		cfg := dare.Config{Key: key}
-		if _, err := encrypt.AesEncrypt(in, out, cfg); err != nil {
-			out.Close()
-			os.Remove(out.Name())
-			errorResp(c,
-				http.StatusInternalServerError,
-				xerrors.Errorf("Encrypt err: %v", err))
-			return
-		}
-		log.Infof("Encrypt content finished! [output file is %s]", out.Name())
-		c.JSON(http.StatusOK, CreateResponse{
-			KeyID:       keyID,
-			EncryptFile: out.Name(),
-		})
-	} else {
-		c.JSON(http.StatusOK, CreateResponse{
-			KeyID:       -1,
-			EncryptFile: "",
-		})
-	}
-}
-
-type MoveRequest struct {
-	Src string `json:"src"`
-	Dst string `json:"dst"`
-}
-
-type MoveResponse struct{}
-
-func move(c *gin.Context) {
-	req := MoveRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
-		return
-	}
-
-	if req.Src == "" || req.Dst == "" {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
-		return
-	}
-
-	path := filepath.Dir(req.Dst)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := os.Mkdir(path, 0755)
-		if err != nil {
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("I/O Error: %v", err))
-			return
-		}
-	}
-
-	log.Infof("Move file src: %s, dst: %s", req.Src, req.Dst)
-	err := os.Rename(req.Src, req.Dst)
-	if err != nil {
-		errorResp(c,
-			http.StatusInternalServerError,
-			xerrors.Errorf("I/O Error: failed to move %v", err))
-		return
-	}
-	c.JSON(http.StatusOK, MoveResponse{})
-}
-
-type CopyRequest struct {
-	Src string `json:"src"`
-	Dst string `json:"dst"`
-}
-
-type CopyResponse struct{}
-
-func copy(c *gin.Context) {
-	req := CopyRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error"))
-		return
-	}
-
-	if req.Src == "" || req.Dst == "" {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error: invalid file path"))
-		return
-	}
-
-	path := filepath.Dir(req.Dst)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := os.Mkdir(path, 0755)
-		if err != nil {
-			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("I/O Error: %v", err))
-			return
-		}
-	}
-
-	log.Infof("Move file src: %s, dst: %s", req.Src, req.Dst)
-
-	fin, err := os.Open(req.Src)
-	if err != nil {
-		errorResp(c,
-			http.StatusInternalServerError,
-			xerrors.Errorf("I/O Error: failed to Open %v", err))
-		return
-	}
-
-	defer fin.Close()
-
-	fout, err := os.Create(req.Dst)
-	if err != nil {
-		errorResp(c,
-			http.StatusInternalServerError,
-			xerrors.Errorf("I/O Error: failed to Create %v", err))
-		return
-	}
-
-	defer fout.Close()
-
-	_, err = io.CopyBuffer(fout, fin, make([]byte, 32*1024))
-	if err != nil {
-		errorResp(c,
-			http.StatusInternalServerError,
-			xerrors.Errorf("I/O Error: failed to copy %v", err))
-		return
-	}
-	c.JSON(http.StatusOK, CopyResponse{})
 }

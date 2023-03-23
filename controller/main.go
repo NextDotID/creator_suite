@@ -43,7 +43,9 @@ func Init() {
 
 	Engine.GET("/api/v1/get-content", get_content)
 	Engine.GET("/api/v1/content-info", content_info)
+	//preview
 	//Engine.GET("/api/v1/show-content", show_content)
+
 	Engine.GET("/api/v1/file/list", list)
 }
 
