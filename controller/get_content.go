@@ -6,10 +6,8 @@ import (
 	"io/ioutil"
 	"strconv"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
-	"github.com/nextdotid/creator_suite/util"
 	"github.com/nextdotid/creator_suite/util/encrypt"
 	log "github.com/sirupsen/logrus"
 
@@ -32,14 +30,22 @@ type GetContentResponse struct {
 
 func get_content(c *gin.Context) {
 	req := GetContentRequest{}
-	req.PublicKey = c.Query("public_key")
-	req.ContentID, _ = strconv.ParseInt(c.Query("content_id"), 10, 64)
 
-	pub_key, err := util.StringToPublicKey(req.PublicKey)
-	if err != nil {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid: %w", err))
+	if err := c.BindJSON(&req); err != nil {
+		fmt.Println(req)
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
 		return
 	}
+
+	//
+	//fmt.Println(req.PublicKey)
+	//req.ContentID, _ = strconv.ParseInt(c.GetQuery("content_id"), 10, 64)
+
+	//pub_key, err := util.StringToPublicKey(req.PublicKey)
+	//if err != nil {
+	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid: %w", err))
+	//	return
+	//}
 
 	content, err := model.FindContentByID(req.ContentID)
 	if err != nil {
@@ -55,25 +61,36 @@ func get_content(c *gin.Context) {
 		return
 	}
 
-	is_paid, err := model.IsQualified(content.ManagedContract, crypto.PubkeyToAddress(*pub_key).String(), assetID)
-	if !is_paid || err != nil {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
-		return
-	}
-
-	key, err := model.FindKeyRecordByID(content.KeyID)
-	if err != nil {
-		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
-		return
-	}
+	//is_paid, err := model.IsQualified(content.ManagedContract, crypto.PubkeyToAddress(*pub_key).String(), assetID)
+	//if !is_paid || err != nil {
+	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
+	//	return
+	//}
 
 	var encrypted_result string
 	var encrypted_password string
 	if content.EncryptionType == model.ENCRYPTION_TYPE_AES {
-		encrypted_password, err = encrypt.EncryptPasswordByPublicKey(key.Password, req.PublicKey)
+		key, err := model.FindKeyRecordByID(content.KeyID)
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
+			return
+		}
+		encrypted_password, err = encrypt.EncryptPasswordWithEncryptionPublicKey(req.PublicKey, key.Password)
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Fail to give the encrypted password: %w", err))
+			return
+		}
 		encrypted_result, err = getContent(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName+".enc"))
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Fail to give the encrypted content: %w", err))
+			return
+		}
 	} else {
-		encrypted_result, err = encrypt.EncryptContentByPublicKey(pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName), req.PublicKey)
+		encrypted_result, err = encrypt.EncryptFileWithEncryptionPublicKey(req.PublicKey, pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName))
+		if err != nil {
+			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Fail to give the encrypted content: %w", err))
+			return
+		}
 	}
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't encrypt content by public_key: %w", err))
