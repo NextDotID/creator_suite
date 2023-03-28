@@ -17,8 +17,8 @@ import (
 )
 
 type GetContentRequest struct {
-	ContentID int64  `json:"content_id"`
-	PublicKey string `json:"public_key"`
+	ContentID           int64  `json:"content_id"`
+	EncryptionPublicKey string `json:"encryption_public_key"`
 }
 
 type GetContentResponse struct {
@@ -32,7 +32,6 @@ func get_content(c *gin.Context) {
 	req := GetContentRequest{}
 
 	if err := c.BindJSON(&req); err != nil {
-		fmt.Println(req)
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
 		return
 	}
@@ -75,7 +74,7 @@ func get_content(c *gin.Context) {
 			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 			return
 		}
-		encrypted_password, err = encrypt.EncryptPasswordWithEncryptionPublicKey(req.PublicKey, key.Password)
+		encrypted_password, err = encrypt.EncryptPasswordWithEncryptionPublicKey(req.EncryptionPublicKey, key.Password)
 		if err != nil {
 			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Fail to give the encrypted password: %w", err))
 			return
@@ -86,7 +85,7 @@ func get_content(c *gin.Context) {
 			return
 		}
 	} else {
-		encrypted_result, err = encrypt.EncryptFileWithEncryptionPublicKey(req.PublicKey, pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName))
+		encrypted_result, err = encrypt.EncryptFileWithEncryptionPublicKey(req.EncryptionPublicKey, pathJoin(STORAGE, strconv.FormatInt(content.ID, 10), content.ContentName))
 		if err != nil {
 			errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Fail to give the encrypted content: %w", err))
 			return

@@ -62,7 +62,6 @@ func EncryptContentByPublicKey(filePath string, publicKey string) (string, error
 }
 
 func EncryptPasswordWithEncryptionPublicKey(encryptionPublicKey string, password string) (string, error) {
-	fmt.Printf("inside fun %s", encryptionPublicKey)
 	publicKeyBytes, err := base64.StdEncoding.DecodeString(encryptionPublicKey)
 	if err != nil {
 		return "", fmt.Errorf("DecodeString EncryptionPublicKey err:%v", err)
