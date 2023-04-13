@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/nextdotid/creator_suite/util"
 	"io/ioutil"
 	"strconv"
 
@@ -19,6 +20,8 @@ import (
 type GetContentRequest struct {
 	ContentID           int64  `json:"content_id"`
 	EncryptionPublicKey string `json:"encryption_public_key"`
+	Signature           string `json:"signature"`
+	SignaturePayload    string `json:"signature_payload"`
 }
 
 type GetContentResponse struct {
@@ -36,15 +39,11 @@ func get_content(c *gin.Context) {
 		return
 	}
 
-	//
-	//fmt.Println(req.PublicKey)
-	//req.ContentID, _ = strconv.ParseInt(c.GetQuery("content_id"), 10, 64)
-
-	//pub_key, err := util.StringToPublicKey(req.PublicKey)
-	//if err != nil {
-	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid: %w", err))
-	//	return
-	//}
+	_, err := util.ValidSignatureAndGetTheAddress(req.SignaturePayload, req.Signature)
+	if err != nil {
+		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Param error, publicKey invalid: %w", err))
+		return
+	}
 
 	content, err := model.FindContentByID(req.ContentID)
 	if err != nil {
@@ -60,7 +59,7 @@ func get_content(c *gin.Context) {
 		return
 	}
 
-	//is_paid, err := model.IsQualified(content.ManagedContract, crypto.PubkeyToAddress(*pub_key).String(), assetID)
+	//is_paid, err := model.IsQualified(content.ManagedContract, addr, assetID)
 	//if !is_paid || err != nil {
 	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Can't find any payment record: %w", err))
 	//	return

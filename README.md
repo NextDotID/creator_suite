@@ -1,12 +1,15 @@
 # CreatorSuite
-CreatorSuite is designed to be a useful tool in Core Service to help content creator to distribute their content.
+CreatorSuite is designed to be a useful tool in [Core Service](https://github.com/nextdotid/core_service_sharp) to help content creator to distribute their content. 
+Base on that, creators don't need any third-party to list and distribute their contents, instead, they have a self-hosted service to help them organize content asset so that they can 100% control their data by themselves.
 
-## frontend
-[frontend repo](https://github.com/NextDotID/creator_suite_fronted)
+
+## Frontend
+docker-compose.yml includes the frontend service, [the source code is here.](https://github.com/NextDotID/creator_suite_frontend)
 
 ## Quick Start
 ```shell
 cp .env.example .env
+
 docker-compose up 
 
 docker-compose up --build  // if you have any changes
