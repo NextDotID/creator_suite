@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://xxx
+HOST: https://xxx.coreservice.com/create_suite
 
 # CreatorSuite
 
@@ -9,31 +9,40 @@ CreatorSuite Service provides create and get api to distribute content asset for
 
 ### Create a Content Asset [post]
 
- + Attributes (object)
+ + Attributes (body/form-data)
     + managed_contract (string, required) - the contract that received the tokens
     + network (string, required) - interact network.
-    + payment_token_address (string, required) - which token and how much it cost to unlock the content
-    + payment_token_amount (string, required) - same as above
     + encryption_type (string, required) - encryption_type=1 symmetric encryption option, encryption_type=2 asymmetric encryption
     + password (string, optional) - depends on encryption_type. If encryption_type=1, use it encryption/decryption the content; if encryption_type=2, keep it empty.
-    + file_extension (string, required) - record the file extension for decryption process
+    + content_name (string, optional) - name of the content
     + description (string, optional) - description of the content
+    + creator_address(string, required) - creator's wallet address
+    + file (file, required) - the original file to list
 
 + Request (application/json)
 
         {
             "managed_contract": "0x3A6c014579583c5D412A9F3914a67C0885dB90c0",
             "network":"mumbai",
-            "payment_token_address": "0x9801ca34B280b60292692E3fD00599f0Fbb8d6b2",
-            "payment_token_amount": "5" ,
             "password": "1234567890qwertq",
             "encryption_type":1,
-            "file_extension":"jpg"
+            "content_name": "my first content"
+            "description" : "it's about ..."
+            "creator_address": "0x..."
+            "file": XXX
         }
 
 
 + Response 200 (application/json)
+    {}
 
+### Update a Content Asset [post]
+
+ + Attributes (body/form-data)
+    + content_id (string, required) - the contract that received the tokens
+    + asset_id (string, required) - interact network.
+
+ + Response 200 (application/json)
     {}
 
 ## Get a Specific Asset [/get-content]
@@ -42,7 +51,7 @@ CreatorSuite Service provides create and get api to distribute content asset for
 After paying for a specific content asset, the buyer can call the get-content api to get the encrypted content asset
 
 + Parameters
-    + public_key(string) - the public key of the account that make the payment of content asset
+    + encryption_public_key(string) - the encryption public key, get from metamask API 
     + content_id(number) - the content asset ID
 
 + Response 200 (application/json)

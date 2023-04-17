@@ -61,13 +61,14 @@ func Alive(cfg *IpfsConfig) (bool, error) {
 	return true, nil
 }
 
-/**
- * @description:
- * @param {*IpfsConfig} cfg IPFS Authorization Config
- * @param {string} path LocalFile path
- * @return {
-	{string} LocationUrl: object of the path in IPFS
- }
+/*
+*
+  - @description:
+  - @param {*IpfsConfig} cfg IPFS Authorization Config
+  - @param {string} path LocalFile path
+  - @return {
+    {string} LocationUrl: object of the path in IPFS
+    }
 */
 func Upload(ctx context.Context, cfg *IpfsConfig, path string) (string, error) {
 	httpCli := &http.Client{}

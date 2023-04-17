@@ -2,7 +2,10 @@ package encrypt
 
 import (
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"golang.org/x/crypto/nacl/box"
 	"io"
 	"io/ioutil"
 	"os"
@@ -48,14 +51,84 @@ func EncryptContentByPublicKey(filePath string, publicKey string) (string, error
 	}
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return "", fmt.Errorf("invalid public key")
+		return "", fmt.Errorf("fail to get the file")
 	}
-	fmt.Printf("content bytes: %s", bytes)
+	//fmt.Printf("content bytes: %s", bytes)
 	encryptDataByte, err := EciesEncrypt(bytes, keyByte)
 	if err != nil {
 		return "", err
 	}
 	return hexutil.Encode(encryptDataByte), nil
+}
+
+func EncryptPasswordWithEncryptionPublicKey(encryptionPublicKey string, password string) (string, error) {
+	publicKeyBytes, err := base64.StdEncoding.DecodeString(encryptionPublicKey)
+	if err != nil {
+		return "", fmt.Errorf("DecodeString EncryptionPublicKey err:%v", err)
+	}
+	var publicKey [32]byte
+	copy(publicKey[:], publicKeyBytes)
+
+	var nonce [24]byte
+	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+		return "", fmt.Errorf("generate nonce for encryption err:%v", err)
+	}
+
+	pk, sk, err := box.GenerateKey(rand.Reader)
+	if err != nil {
+		return "", fmt.Errorf("GenerateKey for encryption err:%v", err)
+	}
+	encryptedBytes := box.Seal(nil, []byte(password), &nonce, &publicKey, sk)
+
+	//return encryptedMessage, nil
+	encryptionData := map[string]interface{}{
+		"version":        "x25519-xsalsa20-poly1305",
+		"nonce":          base64.StdEncoding.EncodeToString(nonce[:]),
+		"ephemPublicKey": base64.StdEncoding.EncodeToString(pk[:]),
+		"ciphertext":     base64.StdEncoding.EncodeToString(encryptedBytes),
+	}
+
+	encryptedData, err := json.Marshal(encryptionData)
+	if err != nil {
+		return "", fmt.Errorf("Json Marshal EncryptionData struct err:%v", err)
+	}
+	return hexutil.Encode(encryptedData), nil
+}
+
+func EncryptFileWithEncryptionPublicKey(encryptionPublicKey string, filePath string) (string, error) {
+	publicKeyBytes, err := base64.StdEncoding.DecodeString(encryptionPublicKey)
+	if err != nil {
+		return "", fmt.Errorf("DecodeString EncryptionPublicKey err:%v", err)
+	}
+	var publicKey [32]byte
+	copy(publicKey[:], publicKeyBytes)
+
+	var nonce [24]byte
+	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+		return "", fmt.Errorf("generate nonce for encryption err:%v", err)
+	}
+
+	fileBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("fail to get the file")
+	}
+
+	pk, sk, err := box.GenerateKey(rand.Reader)
+	encryptedBytes := box.Seal(nil, []byte(fileBytes), &nonce, &publicKey, sk)
+
+	//return encryptedMessage, nil
+	encryptionData := map[string]interface{}{
+		"version":        "x25519-xsalsa20-poly1305",
+		"nonce":          base64.StdEncoding.EncodeToString(nonce[:]),
+		"ephemPublicKey": base64.StdEncoding.EncodeToString(pk[:]),
+		"ciphertext":     base64.StdEncoding.EncodeToString(encryptedBytes),
+	}
+
+	encryptedData, err := json.Marshal(encryptionData)
+	if err != nil {
+		return "", fmt.Errorf("Json Marshal EncryptionData struct err:%v", err)
+	}
+	return hexutil.Encode(encryptedData), nil
 }
 
 // ******************************* Use dare *****************************************

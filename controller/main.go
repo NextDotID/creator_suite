@@ -40,16 +40,13 @@ func Init() {
 
 	Engine.POST("/api/v1/create", create_record)
 	Engine.POST("/api/v1/update", update_record)
-	Engine.GET("/api/v1/get-content", get_content)
-	Engine.GET("/api/v1/show-content", show_content)
+	Engine.POST("/api/v1/get-content", get_content)
 
-	//Engine.POST("/api/v1/ipfs/alive", alive)
-	//Engine.POST("/api/v1/ipfs/upload", upload)
+	Engine.GET("/api/v1/content-info", content_info)
+	//preview
+	//Engine.GET("/api/v1/show-content", show_content)
 
-	Engine.POST("/api/v1/file/list", list)
-	Engine.POST("/api/v1/file/create", create)
-	Engine.POST("/api/v1/file/move", move)
-	Engine.POST("/api/v1/file/copy", copy)
+	Engine.GET("/api/v1/file/list", list)
 }
 
 type ErrorResponse struct {

@@ -1,27 +1,27 @@
 package controller
 
 import (
-	"fmt"
-	"github.com/nextdotid/creator_suite/types"
-	"github.com/nextdotid/creator_suite/util"
-	"math/big"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/nextdotid/creator_suite/model"
+	"github.com/nextdotid/creator_suite/types"
+	"github.com/nextdotid/creator_suite/util/dare"
+	"github.com/nextdotid/creator_suite/util/encrypt"
 	"golang.org/x/xerrors"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 type CreateRecordRequest struct {
-	ManagedContract     string        `json:"managed_contract"`
-	Network             types.Network `json:"network"`
-	PaymentTokenAddress string        `json:"payment_token_address"`
-	PaymentTokenAmount  string        `json:"payment_token_amount"`
-	Password            string        `json:"password"`
-	ContentName         string        `json:"content_name"`
-	EncryptionType      int8          `json:"encryption_type"`
-	FileExtension       string        `json:"file_extension"`
-	Description         string        `json:"description"`
+	ManagedContract string        `json:"managed_contract"`
+	Network         types.Network `json:"network"`
+	Password        string        `json:"password"`
+	EncryptionType  int8          `json:"encryption_type"`
+	FileExtension   string        `json:"file_extension"`
+	Description     string        `json:"description"`
+	CreatorAddress  string        `json:"creator_address"`
 }
 
 type CreateRecordResponse struct {
@@ -30,15 +30,24 @@ type CreateRecordResponse struct {
 
 func create_record(c *gin.Context) {
 	req := CreateRecordRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		fmt.Println(req)
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Param error", err))
-		return
-	}
+	req.Network = types.Network(c.PostForm("network"))
 	if !req.Network.IsValid() {
 		errorResp(c, http.StatusBadRequest, xerrors.Errorf("Cannot support the network right now"))
 		return
 	}
+	req.ManagedContract = c.PostForm("managed_contract")
+	req.Password = c.PostForm("password")
+	et, _ := strconv.ParseInt(c.PostForm("encryption_type"), 10, 64)
+	req.EncryptionType = int8(et)
+	req.Description = c.PostForm("description")
+	req.CreatorAddress = c.PostForm("creator_address")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("get file error", err))
+		return
+	}
+	fileExtension := strings.Trim(filepath.Ext(file.Filename), ".")
 
 	var keyID int64
 	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
@@ -53,28 +62,39 @@ func create_record(c *gin.Context) {
 		}
 	}
 
-	tokenAmount := util.ToWei(req.PaymentTokenAmount, 18)
-	if tokenAmount == big.NewInt(0) {
-		errorResp(c, http.StatusBadRequest, xerrors.Errorf("token amount invalid"))
-		return
-	}
-
 	content, err := model.CreateRecord(req.ManagedContract, keyID, req.EncryptionType,
-		req.FileExtension, req.Network, req.ContentName, req.Description)
+		fileExtension, req.Network, file.Filename, req.Description, req.CreatorAddress)
 	if err != nil {
 		errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Error in DB: %w", err))
 		return
 	}
 
-	//err = model.CreateAsset(content.ID, req.ManagedContract, req.PaymentTokenAddress, tokenAmount, req.Network)
-	//if err != nil {
-	//	updateErr := content.UpdateToInvalidStatus(content.ID)
-	//	if updateErr != nil {
-	//		log.Errorf("update content record err:%v", updateErr)
-	//	}
-	//	errorResp(c, http.StatusInternalServerError, xerrors.Errorf("Create an asset in Contract error: %v", err))
-	//	return
-	//}
+	filePath := "/storage/" + strconv.FormatInt(content.ID, 10) + "/" + file.Filename
+	if err = os.Mkdir("/storage/"+strconv.FormatInt(content.ID, 10), os.ModePerm); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to create new folder, err: %w", err))
+		return
+	}
+	if err = c.SaveUploadedFile(file, filePath); err != nil {
+		errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to upload the file, err:%w", err))
+		return
+	}
+
+	// generate encrypted file
+	if req.EncryptionType == model.ENCRYPTION_TYPE_AES {
+		src, _ := os.Open(filePath)
+		dst, _ := os.Create(filePath + ".enc")
+		key, err := encrypt.DeriveKey([]byte(req.Password), src, dst)
+		if err != nil {
+			errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to DeriveKey to encrypt", err))
+			return
+		}
+		cfg := dare.Config{Key: key}
+		_, err = encrypt.AesEncrypt(src, dst, cfg)
+		if err != nil {
+			errorResp(c, http.StatusBadRequest, xerrors.Errorf("fail to encrypt the file", err))
+			return
+		}
+	}
 
 	c.JSON(http.StatusOK, CreateRecordResponse{
 		ContentID: content.ID,
